@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Custom Grab Cursors Settings</title>
+    <style>
+        :root {
+            --accent: #4caf50;
+        }
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 2rem auto; padding: 1rem; background: #f9f9f9; color: #333; }
+        h1 { font-size: 1.8rem; color: var(--accent); text-align: center; }
+        .section { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 1rem; margin: 1rem 0; }
+        label { display: block; margin: 0.5rem 0; }
+        input[type="file"] { margin-top: 0.25rem; }
+        img { max-width: 100px; display: block; margin-top: .5rem; border: 1px solid #ccc; }
+        input[type="number"], input[type="color"] { margin-left: 0.5rem; }
+        button { margin-top: 1rem; padding: .5rem 1rem; background: var(--accent); color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { opacity: 0.9; }
+        .footer { text-align: center; font-size: 0.9rem; color: #666; margin-top: 2rem; }
+    </style>
+</head>
+<body>
+    <h1>Custom Grab Cursor Settings</h1>
+    <p>Configure cursor images, hotspots, and appearance.  Changes are applied immediately to open pages.</p>
+    <form id="settingsForm">
+        <div class="section">
+            <label><input type="checkbox" id="enableCheckbox"> Enable custom cursors</label>
+            <label>
+                Accent color:
+                <input type="color" id="accentColor" value="#4caf50">
+            </label>
+        </div>
+        <div class="section">
+            <label>
+                Grab cursor:
+                <input type="file" id="grabInput" accept="image/png">
+                <img id="grabPreview" src="" alt="Grab preview">
+            </label>
+            <label>
+                Grabbing cursor:
+                <input type="file" id="grabbingInput" accept="image/png">
+                <img id="grabbingPreview" src="" alt="Grabbing preview">
+            </label>
+        </div>
+        <div class="section">
+            <label><input type="checkbox" id="syncHotspot"> Use same hotspot for both cursors</label>
+            <div id="sharedHotspot">
+                <label>
+                    Hotspot X:
+                    <input type="number" id="hotspotX" min="0" max="32">
+                </label>
+                <label>
+                    Hotspot Y:
+                    <input type="number" id="hotspotY" min="0" max="32">
+                </label>
+            </div>
+            <div id="separateHotspot" style="display:none;">
+                <label>
+                    Grab hotspot X:
+                    <input type="number" id="hotspotGrabX" min="0" max="32">
+                </label>
+                <label>
+                    Grab hotspot Y:
+                    <input type="number" id="hotspotGrabY" min="0" max="32">
+                </label>
+                <label>
+                    Grabbing hotspot X:
+                    <input type="number" id="hotspotGrabbingX" min="0" max="32">
+                </label>
+                <label>
+                    Grabbing hotspot Y:
+                    <input type="number" id="hotspotGrabbingY" min="0" max="32">
+                </label>
+            </div>
+        </div>
+        <button type="button" id="resetBtn">Reset to defaults</button>
+    </form>
+    <div class="footer">Developed by Yossof0 – customize your experience!</div>
+    <script src="options.js"></script>
+</body>
+</html>
