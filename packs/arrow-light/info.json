@@ -1,0 +1,10 @@
+{
+  "id": "arrow-light",
+  "name": "Arrow Light",
+  "author": "Yossof0",
+  "description": "Nice modern Cursor, Light theme",
+  "tags": ["modern", "minimal", "official"],
+  "hotspotGrabX": 16, "hotspotGrabY": 16,
+  "hotspotGrabbingX": 16, "hotspotGrabbingY": 11,
+  "syncHotspot": false
+}

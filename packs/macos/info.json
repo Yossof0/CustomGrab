@@ -1,0 +1,11 @@
+{
+  "id": "macos",
+  "name": "macOS",
+  "author": "Yossof0",
+  "description": "Classic macOS grab and grabbing cursors.",
+  "tags": ["macos", "minimal", "official"],
+  "hotspotGrabX": 16, "hotspotGrabY": 16,
+  "hotspotGrabbingX": 18, "hotspotGrabbingY": 18,
+  "syncHotspot": false
+
+}

@@ -1,0 +1,54 @@
+{
+  "_comment": "Cursor-Gallery registry — https://github.com/Yossof0/Cursor-Gallery",
+  "_version": 1,
+  "packs": [
+    {
+      "id": "macos",
+      "name": "macOS",
+      "author": "Yossof0",
+      "description": "Classic macOS grab and grabbing cursors.",
+      "tags": ["macos", "minimal", "official"],
+      "grabUrl": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@main/packs/macos/grab.png",
+      "grabbingUrl": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@main/packs/macos/grabbing.png",
+      "grabPreview": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@main/packs/macos/grab.png",
+      "grabbingPreview": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@main/packs/macos/grabbing.png",
+      "hotspotX": 16, "hotspotY": 16,
+      "syncHotspot": true,
+      "downloads": 0,
+      "rating": null,
+      "added": "2025-01-01"
+    },
+    {
+      "id": "win11-light",
+      "name": "Windows 11 Light",
+      "author": "Yossof0",
+      "description": "Windows 11 style cursors, light variant.",
+      "tags": ["windows", "minimal", "official"],
+      "grabUrl": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@main/packs/win11-light/grab.png",
+      "grabbingUrl": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@main/packs/win11-light/grabbing.png",
+      "grabPreview": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@main/packs/win11-light/grab.png",
+      "grabbingPreview": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@main/packs/win11-light/grabbing.png",
+      "hotspotX": 16, "hotspotY": 16,
+      "syncHotspot": true,
+      "downloads": 0,
+      "rating": null,
+      "added": "2025-01-01"
+    },
+    {
+      "id": "win11-dark",
+      "name": "Windows 11 Dark",
+      "author": "Yossof0",
+      "description": "Windows 11 style cursors, dark variant.",
+      "tags": ["windows", "dark", "minimal", "official"],
+      "grabUrl": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@main/packs/win11-dark/grab.png",
+      "grabbingUrl": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@main/packs/win11-dark/grabbing.png",
+      "grabPreview": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@main/packs/win11-dark/grab.png",
+      "grabbingPreview": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@main/packs/win11-dark/grabbing.png",
+      "hotspotX": 16, "hotspotY": 16,
+      "syncHotspot": true,
+      "downloads": 0,
+      "rating": null,
+      "added": "2025-01-01"
+    }
+  ]
+}

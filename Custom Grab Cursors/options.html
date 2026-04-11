@@ -1,0 +1,2802 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Custom Grab Cursors Settings</title>
+    <style>
+      :root {
+        --accent: #4caf50;
+        --bg: #ffffff;
+        --text: #1f1f1f;
+        --card: #f7f7f9;
+        --border: rgba(0, 0, 0, 0.16);
+        --panel: #ffffff;
+        --shadow: rgba(0, 0, 0, 0.16);
+        --proper: rgb(0, 0, 0);
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 1rem;
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      /* Theme transition overlay */
+      #theme-transition {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        pointer-events: none;
+        opacity: 0;
+        background: var(--bg);
+        transition: opacity 0.18s ease;
+      }
+      #theme-transition.fade-in {
+        opacity: 1;
+      }
+      #theme-transition.fade-out {
+        opacity: 0;
+      }
+      h1 {
+        font-size: 1.9rem;
+        color: var(--accent);
+        text-align: center;
+      }
+      .tabs {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+        margin: 1rem 0;
+        flex-wrap: wrap;
+      }
+      .tab.active {
+        background: var(--card);
+        border-bottom: 2px solid var(--accent);
+      }
+      .tab-panel {
+        display: none;
+      }
+      .tab-panel.active {
+        display: block;
+      }
+      .section {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 1rem;
+        margin: 1rem 0;
+      }
+      .section h2 {
+        margin-top: 0;
+        font-size: 1.2rem;
+        color: var(--text);
+      }
+      label {
+        display: block;
+        margin: 0.5rem 0;
+      }
+      input[type="file"] {
+        margin-top: 0.25rem;
+      }
+      input[type="text"],
+      input[type="url"],
+      select {
+        width: 100%;
+        padding: 0.35rem;
+        margin-top: 0.25rem;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        background: var(--panel);
+        color: var(--text);
+      }
+      input[type="number"] {
+        width: 5rem;
+        padding: 0.35rem 0.4rem;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        background: var(--panel);
+        color: var(--text);
+        margin-left: 0.4rem;
+      }
+      input[type="color"] {
+        margin-left: 0.5rem;
+      }
+      textarea {
+        width: 100%;
+        min-height: 120px;
+        margin-top: 0.25rem;
+        padding: 0.5rem;
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        background: var(--panel);
+        color: var(--text);
+        resize: vertical;
+      }
+      button.secondary {
+        background: #555;
+      }
+      button.danger {
+        background: #e04b4b;
+      }
+      button:hover {
+        opacity: 0.9;
+      }
+      .footer {
+        text-align: center;
+        font-size: 0.9rem;
+        color: #666;
+        margin-top: 2rem;
+      }
+      .grid {
+        display: grid;
+        gap: 1rem;
+      }
+      .grid-2 {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      /* Confirm modal */
+      #confirm-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.18s;
+      }
+      #confirm-overlay.show {
+        opacity: 1;
+        pointer-events: all;
+      }
+      #confirm-box {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.4rem 1.5rem 1.1rem;
+        max-width: 340px;
+        width: 90%;
+        box-shadow: 0 8px 32px var(--shadow);
+        transform: translateY(8px);
+        transition: transform 0.18s;
+      }
+      #confirm-overlay.show #confirm-box {
+        transform: translateY(0);
+      }
+      #progress-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        z-index: 10001;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.18s;
+      }
+      #progress-overlay.show {
+        opacity: 1;
+        pointer-events: all;
+      }
+      #progress-box {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 1.75rem 2rem;
+        min-width: 300px;
+        max-width: 420px;
+        box-shadow: 0 8px 32px var(--shadow);
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+      }
+      #progress-title {
+        font-weight: 700;
+        font-size: 1rem;
+      }
+      #progress-status {
+        font-size: 0.85rem;
+        opacity: 0.65;
+        min-height: 1.2em;
+      }
+      #progress-bar-track {
+        height: 8px;
+        border-radius: 99px;
+        background: var(--border);
+        overflow: hidden;
+      }
+      #progress-bar-fill {
+        height: 100%;
+        border-radius: 99px;
+        background: var(--accent);
+        width: 0%;
+        transition: width 0.25s;
+      }
+      #progress-detail {
+        font-size: 0.75rem;
+        opacity: 0.45;
+      }
+      #confirm-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--proper);
+        margin-bottom: 0.4rem;
+      }
+      #confirm-msg {
+        font-size: 0.875rem;
+        color: var(--text);
+        opacity: 0.8;
+        margin-bottom: 1.1rem;
+        line-height: 1.5;
+      }
+      #confirm-actions {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+      }
+      #confirm-actions button {
+        margin-top: 0;
+        padding: 0.4rem 1rem;
+        font-size: 0.875rem;
+      }
+      #toast-container {
+        position: fixed;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        z-index: 9999;
+        pointer-events: none;
+      }
+      .toast {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-left: 3px solid var(--accent);
+        color: var(--text);
+        padding: 0.6rem 1rem;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        box-shadow: 0 4px 12px var(--shadow);
+        opacity: 0;
+        transform: translateX(20px);
+        transition:
+          opacity 0.2s,
+          transform 0.2s;
+        pointer-events: none;
+      }
+      .toast.show {
+        opacity: 1;
+        transform: translateX(0);
+      }
+      .toast.error {
+        border-left-color: #e04b4b;
+      }
+      #drop-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        background: rgba(0, 0, 0, 0.55);
+        backdrop-filter: blur(4px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 1rem;
+        pointer-events: none;
+      }
+      #drop-overlay.active {
+        display: flex;
+      }
+      #drop-overlay .drop-box {
+        border: 2px dashed var(--accent);
+        border-radius: 16px;
+        padding: 2.5rem 3.5rem;
+        background: var(--card);
+        color: var(--text);
+        text-align: center;
+        box-shadow: 0 8px 32px var(--shadow);
+      }
+      .info-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 17px;
+        height: 17px;
+        border-radius: 50%;
+        border: 1.5px solid var(--border);
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: var(--text);
+        opacity: 0.45;
+        cursor: default;
+        transition:
+          opacity 0.15s,
+          border-color 0.15s;
+        user-select: none;
+        flex-shrink: 0;
+        line-height: 1;
+        vertical-align: middle;
+        margin-left: 0.4rem;
+        font-style: normal;
+      }
+      .info-icon:hover {
+        opacity: 1;
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      #info-tooltip {
+        position: fixed;
+        z-index: 999999;
+        max-width: 260px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 0.65rem 0.85rem;
+        box-shadow: 0 6px 24px var(--shadow);
+        pointer-events: none;
+        opacity: 0;
+        transform: scale(0.92) translateY(4px);
+        transition:
+          opacity 0.15s,
+          transform 0.15s;
+        font-size: 0.82rem;
+        line-height: 1.5;
+        color: var(--text);
+      }
+      #info-tooltip.visible {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+      #info-tooltip strong {
+        display: block;
+        margin-bottom: 0.3rem;
+        font-size: 0.85rem;
+        color: var(--accent);
+      }
+      h2,
+      h3 {
+        display: flex;
+        align-items: center;
+        gap: 0;
+      }
+      #drop-overlay .drop-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+      }
+      #drop-overlay .drop-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+      }
+      #drop-overlay .drop-hint {
+        font-size: 0.82rem;
+        opacity: 0.6;
+      }
+
+      /* Pack grid */
+      .pack-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+        margin-top: 0.75rem;
+        align-items: stretch;
+      }
+      .pack-grid:not(.view-list) .pack-card {
+        height: 100%;
+        box-sizing: border-box;
+      }
+
+      /* View modes */
+      .pack-grid.view-compact {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.5rem;
+      }
+      .pack-grid.view-list {
+        grid-template-columns: 1fr;
+        gap: 0.4rem;
+      }
+
+      /* Compact mode tweaks */
+      .pack-grid.view-compact .pack-card {
+        padding: 0.5rem;
+        gap: 0.3rem;
+      }
+      .pack-grid.view-compact .pack-card h4 {
+        font-size: 0.8rem;
+        margin-bottom: 0;
+      }
+      .pack-grid.view-compact .pack-card-title {
+        padding-right: 1.6rem;
+      }
+      .pack-grid.view-compact .pack-card .thumbs img {
+        width: 28px;
+        height: 28px;
+      }
+      .pack-grid.view-compact .pack-card .tag-row {
+        display: none;
+      }
+      .pack-grid.view-compact .pack-card .pack-actions button {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.4rem;
+      }
+
+      /* List mode tweaks */
+      .pack-grid.view-list .pack-card {
+        flex-direction: row;
+        align-items: center;
+        padding: 0.5rem 0.75rem;
+        gap: 0.5rem;
+        overflow: hidden;
+      }
+      /* List view: single row — thumbs | desc-icon | title | badge-row | actions */
+      .pack-grid.view-list .pack-card .old-badge {
+        display: none;
+      }
+      .pack-grid.view-list .pack-card .card-bottom {
+        display: contents;
+      }
+      .pack-grid.view-list .pack-card .card-info-row {
+        display: none;
+      }
+      .pack-grid.view-list .pack-card .tag-row {
+        display: none;
+      }
+      .pack-grid.view-list .pack-card .thumbs {
+        order: -2;
+        flex-wrap: nowrap;
+        flex-shrink: 0;
+      }
+      .pack-grid.view-list .pack-card .thumbs img {
+        width: 32px;
+        height: 32px;
+      }
+      .pack-grid.view-list .pack-card .pack-desc-icon {
+        order: -1;
+        position: static;
+        transform: none;
+        top: auto;
+        right: auto;
+        flex-shrink: 0;
+      }
+      .pack-grid.view-list .pack-card .pack-card-title {
+        order: 0;
+        margin: 0;
+        font-size: 0.9rem;
+        flex: 1;
+        min-width: 0;
+        padding-right: 0;
+      }
+      .pack-grid.view-list .pack-card .card-badge-row {
+        order: 1;
+        display: flex !important;
+        align-items: center;
+        flex-shrink: 0 !important;
+        flex-grow: 0 !important;
+        width: 172px !important;
+        gap: 10px;
+      }
+      .pack-grid.view-list .pack-card .card-badge-row .badge {
+        width: 54px !important;
+        flex-shrink: 0;
+        flex-grow: 0;
+        justify-content: center;
+        margin-top:-0.5px;
+      }
+      .pack-grid.view-list .pack-card .card-badge-row .src-slot {
+        width: 90px !important;
+        min-width: 0 !important;
+        flex-shrink: 0;
+        flex-grow: 0;
+        justify-content: flex-start;
+      }
+      .pack-grid.view-list .pack-card .card-badge-row .fav-btn {
+        width: 28px !important;
+        flex-shrink: 0;
+        flex-grow: 0;
+        justify-content: center;
+        margin-left:-25px;
+      }
+      .pack-grid.view-list .pack-card .pack-actions {
+        order: 2;
+        display: flex;
+        flex-direction: row;
+        flex-shrink: 0;
+        flex-grow: 0;
+        flex-wrap: nowrap;
+        margin-top: 0;
+        padding-top: 0;
+        gap: 0.3rem;
+        width: 134px;
+      }
+      .pack-grid.view-list .pack-card .pack-actions button {
+        flex: 1;
+        margin-top: 0;
+        padding: 0.3rem 0.65rem;
+      }
+      /* normal/compact: show old-style badge + infoRow, hide new badge row */
+      .pack-card .card-badge-row {
+        display: none;
+      }
+      .pack-card .old-badge {
+        position: absolute;
+        right: 0.5rem;
+        top: 0.5rem;
+      }
+
+      /* View toggle buttons */
+      .view-toggle {
+        display: flex;
+        gap: 0.25rem;
+      }
+      .view-btn {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 0.3rem 0.5rem;
+        cursor: pointer;
+        color: var(--muted, #888);
+        font-size: 0.8rem;
+        margin-top: 0;
+        transition:
+          background 0.12s,
+          color 0.12s,
+          border-color 0.12s;
+        line-height: 1;
+      }
+      .view-btn.active {
+        background: var(--card);
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .view-btn:hover:not(.active) {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .pack-card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 0.75rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        position: relative;
+        cursor: grab;
+        user-select: none;
+        transition:
+          box-shadow 0.15s,
+          opacity 0.15s,
+          border-color 0.15s;
+      }
+      .pack-card:active {
+        cursor: grabbing;
+      }
+      .pack-card.active {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.25);
+      }
+      .pack-card.dragging {
+        opacity: 0.45;
+        box-shadow: 0 4px 16px var(--shadow);
+      }
+      .pack-card.drag-over {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.45);
+        background: rgba(76, 175, 80, 0.05);
+      }
+      .pack-card h4 {
+        margin: 0;
+        font-size: 1rem;
+        pointer-events: none;
+        padding-right: 0;
+      }
+      .pack-card-title {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        margin: 0 0 0.25rem;
+        padding-right: 2rem;
+      }
+      .pack-card-title > span {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .pack-desc-icon {
+        pointer-events: all;
+        position: absolute;
+        top: 3.5rem;
+        right: 0.5rem;
+      }
+      .pack-grid.view-compact .pack-card .pack-desc-icon {
+        top: 3.5rem;
+        right: 0.35rem;
+      }
+      .pack-card .thumbs {
+        display: flex;
+        gap: 0.4rem;
+        pointer-events: none;
+        flex-wrap: wrap;
+        align-items: flex-start;
+      }
+      .pack-card .thumbs img {
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+        object-position: center;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: rgba(0, 0, 0, 0.05);
+        display: block;
+        flex-shrink: 0;
+      }
+      .pack-card .tag-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.15rem;
+        pointer-events: none;
+        min-height: 0;
+        flex-grow: 1;
+        align-content: flex-start;
+      }
+      .card-info-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding-top: 0.35rem;
+        pointer-events: none;
+      }
+      .card-info-row .fav-btn,
+      .card-info-row .src-badge {
+        pointer-events: all;
+      }
+      .card-bottom {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        margin-top: auto;
+      }
+      .pack-card .pack-actions {
+        display: flex;
+        gap: 0.25rem;
+        flex-wrap: wrap;
+        padding-top: 0;
+      }
+      .card-badge-row {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        width: 100%;
+        pointer-events: none;
+      }
+      .card-badge-row .badge,
+      .card-badge-row .fav-btn {
+        pointer-events: all;
+      }
+      .src-slot {
+        display: flex;
+        align-items: center;
+        min-width: 72px;
+      }
+      .pack-card .pack-actions button {
+        flex: 1 1 100%;
+      }
+      .pack-grid:not(.view-list) .pack-card .pack-card-title {
+        min-height: 2rem;
+        align-items: flex-start;
+      }
+      .pack-card.readonly-card .pack-actions button {
+        min-height: 4rem;
+      }
+      .pack-card .badge {
+        position: absolute;
+        right: 0.5rem;
+        top: 0.5rem;
+        padding: 0.2rem 0.55rem;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.85);
+        cursor: pointer;
+        color: var(--proper);
+        transition:
+          background 0.15s,
+          color 0.15s;
+      }
+      .pack-card .badge.badge-active,
+      .pack-card.active .badge {
+        background: var(--accent);
+        color: #fff;
+        border-color: transparent;
+      }
+      .pack-card .badge:hover:not(:disabled):not(.badge-active) {
+        background: var(--accent);
+        color: #fff;
+        border-color: transparent;
+      }
+      .card-badge-row .badge {
+        position: static;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 22px;
+        padding: 0 0.55rem;
+        border-radius: 999px;
+        font-size: 0.7rem;
+        border: 1px solid var(--border);
+        background: var(--bg);
+        cursor: pointer;
+        color: var(--text);
+        transition:
+          background 0.15s,
+          color 0.15s;
+        white-space: nowrap;
+        line-height: 1;
+      }
+      .card-badge-row .badge.badge-active {
+        background: var(--accent);
+        color: #fff;
+        border-color: transparent;
+        cursor: default;
+      }
+      .card-badge-row .badge:hover:not(:disabled):not(.badge-active) {
+        background: var(--accent);
+        color: #fff;
+        border-color: transparent;
+      }
+      .src-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 22px;
+        padding: 0 0.5rem;
+        gap: 0.25rem;
+        border-radius: 999px;
+        font-size: 0.68rem;
+        white-space: nowrap;
+        line-height: 1;
+      }
+      .src-badge.src-builtin {
+        background: rgba(99, 102, 241, 0.12);
+        color: var(--accent);
+      }
+      .src-badge.src-installed {
+        background: rgba(34, 197, 94, 0.12);
+        color: #16a34a;
+      }
+      .src-badge.src-created {
+        background: rgba(251, 191, 36, 0.12);
+        color: #d97706;
+      }
+      .src-badge.src-imported {
+        background: rgba(139, 92, 246, 0.12);
+        color: #7c3aed;
+      }
+      .src-badge.src-cloned {
+        background: rgba(6, 182, 212, 0.12);
+        color: #0891b2;
+      }
+      [data-theme="dark"] .src-badge.src-cloned,
+      [data-theme="neon"] .src-badge.src-cloned,
+      [data-theme="cherry"] .src-badge.src-cloned,
+      [data-theme="blueberry"] .src-badge.src-cloned {
+        color: #22d3ee;
+      }
+      [data-theme="dark"] .src-badge.src-installed,
+      [data-theme="neon"] .src-badge.src-installed,
+      [data-theme="cherry"] .src-badge.src-installed,
+      [data-theme="blueberry"] .src-badge.src-installed {
+        color: #4ade80;
+      }
+      [data-theme="dark"] .src-badge.src-created,
+      [data-theme="neon"] .src-badge.src-created,
+      [data-theme="cherry"] .src-badge.src-created,
+      [data-theme="blueberry"] .src-badge.src-created {
+        color: #fbbf24;
+      }
+      [data-theme="dark"] .src-badge.src-imported,
+      [data-theme="neon"] .src-badge.src-imported,
+      [data-theme="cherry"] .src-badge.src-imported,
+      [data-theme="blueberry"] .src-badge.src-imported {
+        color: #a78bfa;
+      }
+      /* tag-row */
+      .pack-card .tag {
+        font-size: 0.68rem;
+        padding: 0.1rem 0.4rem;
+        border-radius: 999px;
+        background: rgba(128, 128, 128, 0.15);
+        color: var(--text);
+        width: 11ch;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        text-align: center;
+        box-sizing: border-box;
+      }
+      /* fav-btn: small, natural width — NOT stretched */
+      .pack-card .fav-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0.1rem 0.2rem;
+        margin: 0;
+        line-height: 1;
+        pointer-events: all;
+        display: inline-flex;
+        align-items: center;
+        width: auto;
+        flex: 0 0 auto;
+      }
+      .drag-hint {
+        font-size: 0.82rem;
+        color: #888;
+        margin-top: 0.4rem;
+      }
+
+      /* Custom circular checkboxes */
+      input[type="checkbox"] {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 1.1rem;
+        height: 1.1rem;
+        border: 2px solid var(--border);
+        border-radius: 50%;
+        background: var(--panel);
+        cursor: pointer;
+        vertical-align: middle;
+        position: relative;
+        flex-shrink: 0;
+        transition:
+          background 0.15s,
+          border-color 0.15s;
+        margin-right: 0.4rem;
+      }
+      input[type="checkbox"]:checked {
+        background: var(--accent);
+        border-color: var(--accent);
+      }
+      input[type="checkbox"]:checked::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -55%) rotate(45deg);
+        width: 0.28rem;
+        height: 0.5rem;
+        border: 2px solid #fff;
+        border-top: none;
+        border-left: none;
+        transition: none;
+      }
+      input[type="checkbox"]:hover {
+        border-color: var(--accent);
+      }
+      label:has(input[type="checkbox"]) {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+      }
+      input[type="radio"] {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 1.1rem;
+        height: 1.1rem;
+        border: 2px solid var(--border);
+        border-radius: 50%;
+        background: var(--panel);
+        cursor: pointer;
+        vertical-align: middle;
+        position: relative;
+        flex-shrink: 0;
+        transition:
+          background 0.15s,
+          border-color 0.15s;
+        margin-right: 0.4rem;
+      }
+      input[type="radio"]:checked {
+        border-color: var(--accent);
+        background: var(--panel);
+      }
+      input[type="radio"]:checked::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 0.42rem;
+        height: 0.42rem;
+        border-radius: 50%;
+        background: var(--accent);
+      }
+      input[type="radio"]:hover {
+        border-color: var(--accent);
+      }
+      label:has(input[type="radio"]) {
+        display: inline-flex;
+        align-items: center;
+        cursor: pointer;
+      }
+      .tab {
+        padding: 0.6rem 1rem;
+        border: 1px solid var(--border);
+        background: var(--panel);
+        border-radius: 10px;
+        cursor: pointer;
+        color: var(--proper);
+        transition:
+          background 0.15s,
+          border-color 0.15s,
+          color 0.15s;
+      }
+      button {
+        margin-top: 0.75rem;
+        padding: 0.5rem 1rem;
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: opacity 0.15s;
+      }
+
+      /* Pack search */
+      #packSearch {
+        margin-bottom: 0.5rem;
+      }
+
+      .file-btn {
+        margin-bottom: 0.5rem;
+        padding: 0.35rem 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--panel);
+        cursor: pointer;
+        margin-top: 0.5rem;
+        color: var(--proper);
+      }
+      .file-btn:hover {
+        background: rgba(0, 0, 0, 0.05);
+      }
+      .file-btn:disabled {
+        cursor: default;
+        opacity: 0.45;
+      }
+      .file-btn:disabled:hover {
+        background: var(--panel);
+      }
+      .drop-zone {
+        border: 2px dashed var(--border);
+        border-radius: 10px;
+        padding: 1rem;
+        text-align: center;
+        cursor: pointer;
+        transition:
+          border-color 0.15s,
+          background 0.15s;
+        margin-top: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.3rem;
+      }
+      .drop-zone:hover,
+      .drop-zone.dz-over {
+        border-color: var(--accent);
+        background: rgba(var(--accent-rgb, 76, 175, 80), 0.05);
+      }
+      .drop-zone .dz-icon {
+        font-size: 1.6rem;
+        line-height: 1;
+      }
+      .drop-zone .dz-label {
+        font-size: 0.82rem;
+        color: var(--text);
+        opacity: 0.75;
+      }
+      .drop-zone .dz-hint {
+        font-size: 0.72rem;
+        opacity: 0.45;
+      }
+      .preview-row {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+      }
+      .preview-row img {
+        max-width: 100px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        border: 1px solid var(--border);
+        padding: 0.5rem;
+      }
+      th {
+        background: rgba(0, 0, 0, 0.05);
+        text-align: left;
+      }
+      .small {
+        font-size: 0.9rem;
+        color: #555;
+        margin-top: 0.45rem;
+      }
+      .badge {
+        display: inline-block;
+        background: rgba(0, 0, 0, 0.1);
+        padding: 0.15rem 0.4rem;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        margin-left: 0.25rem;
+      }
+      #previewSandbox {
+        border: 1px dashed rgba(0, 0, 0, 0.35);
+        border-radius: 10px;
+        padding: 1rem;
+        background: var(--panel);
+        min-height: 180px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #previewSandbox .sandbox-box {
+        position: relative;
+        width: 160px;
+        height: 120px;
+        background: linear-gradient(
+          135deg,
+          rgba(0, 0, 0, 0.06),
+          rgba(0, 0, 0, 0.01)
+        );
+        border: 2px dashed rgba(0, 0, 0, 0.15);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text);
+        user-select: none;
+        cursor: grab;
+        flex-shrink: 0;
+      }
+      #previewSandbox .sandbox-box.dragging {
+        cursor: grabbing;
+      }
+      .tiny {
+        font-size: 0.85rem;
+      }
+
+      /* Advanced tab */
+      .site-rule-row {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        margin-bottom: 0.4rem;
+        flex-wrap: wrap;
+      }
+      .site-rule-row input[type="text"] {
+        flex: 1;
+        min-width: 150px;
+        margin-top: 0;
+      }
+      .site-rule-row select {
+        width: auto;
+        margin-top: 0;
+        flex: 0 0 auto;
+      }
+      .site-rule-row button {
+        margin-top: 0;
+        padding: 0.3rem 0.6rem;
+        flex: 0 0 auto;
+      }
+      #siteRulesContainer {
+        max-height: 240px;
+        overflow-y: auto;
+        margin-top: 0.5rem;
+      }
+
+      /* Theme palettes */
+      body.theme-dark {
+        --bg: #181a1f;
+        --text: #e5e5e5;
+        --card: #1e2028;
+        --border: rgba(255, 255, 255, 0.12);
+        --panel: #1c1f25;
+        --accent: #7cbbff;
+        --shadow: rgba(0, 0, 0, 0.6);
+        --proper: #fff;
+      }
+      body.theme-neon {
+        --bg: #02030a;
+        --text: #f0faff;
+        --card: rgba(0, 0, 0, 0.4);
+        --border: rgba(0, 255, 255, 0.25);
+        --panel: rgba(0, 0, 0, 0.35);
+        --accent: #00ffe4;
+        --shadow: rgba(0, 255, 255, 0.25);
+        --proper: #fff;
+      }
+      body.theme-cherry {
+        --bg: #1b0b15;
+        --text: #ffeeff;
+        --card: #2a111f;
+        --border: rgba(255, 0, 132, 0.3);
+        --panel: #2b1120;
+        --accent: #ff2d84;
+        --shadow: rgba(255, 0, 132, 0.3);
+        --proper: #fff;
+      }
+      body.theme-blueberry {
+        --bg: #0d0f1a;
+        --text: #dde3ff;
+        --card: #13162a;
+        --border: rgba(120, 100, 255, 0.3);
+        --panel: #151829;
+        --accent: #7b6fff;
+        --shadow: rgba(120, 100, 255, 0.35);
+        --proper: #fff;
+      }
+      body.theme-stormy {
+        --bg: #1c2333;
+        --text: #cdd6e8;
+        --card: #232c3d;
+        --border: rgba(140, 165, 210, 0.22);
+        --panel: #1e2738;
+        --accent: #7fa8d8;
+        --shadow: rgba(60, 90, 140, 0.4);
+        --proper: #e8eef7;
+      }
+      body.theme-desert {
+        --bg: #2b1d0e;
+        --text: #f5e6cf;
+        --card: #3a2614;
+        --border: rgba(210, 150, 80, 0.28);
+        --panel: #33200f;
+        --accent: #e8954a;
+        --shadow: rgba(180, 90, 20, 0.35);
+        --proper: #fdf0dc;
+      }
+      body.theme-coastal {
+        --bg: #f5fdf8;
+        --text: #1a3a30;
+        --card: #e8f7f0;
+        --border: rgba(60, 170, 120, 0.22);
+        --panel: #f0fbf5;
+        --accent: #2eb87a;
+        --shadow: rgba(40, 160, 110, 0.18);
+        --proper: #0e2820;
+      }
+      body.theme-summer {
+        --bg: #0d2f35;
+        --text: #e8f8f5;
+        --card: #133840;
+        --border: rgba(0, 210, 190, 0.25);
+        --panel: #102e35;
+        --accent: #ff7b42;
+        --shadow: rgba(255, 110, 40, 0.3);
+        --proper: #fff;
+      }
+      body.theme-parchment {
+        --bg: #f5efe0;
+        --text: #3b2a1a;
+        --card: #ede3ce;
+        --border: rgba(120, 80, 40, 0.2);
+        --panel: #f9f3e6;
+        --accent: #a0522d;
+        --shadow: rgba(120, 80, 40, 0.2);
+        --proper: #2a1a0a;
+      }
+      body.theme-aurora {
+        --bg: #080f1a;
+        --text: #d0eee8;
+        --card: #0d1a24;
+        --border: rgba(50, 200, 160, 0.2);
+        --panel: #0a1520;
+        --accent: #3dd6a0;
+        --shadow: rgba(40, 180, 130, 0.3);
+        --proper: #e8fff8;
+      }
+      body.theme-espresso {
+        --bg: #1a0f0a;
+        --text: #f0e6d3;
+        --card: #271710;
+        --border: rgba(180, 120, 60, 0.25);
+        --panel: #221208;
+        --accent: #c8832a;
+        --shadow: rgba(160, 90, 20, 0.35);
+        --proper: #fdf3e3;
+      }
+      body.theme-graphite {
+        --bg: #1a1a1a;
+        --text: #d8d8d8;
+        --card: #242424;
+        --border: rgba(180, 180, 180, 0.15);
+        --panel: #1f1f1f;
+        --accent: #a0a0a0;
+        --shadow: rgba(0, 0, 0, 0.5);
+        --proper: #f0f0f0;
+      }
+      body.theme-sakura {
+        --bg: #fdf6f8;
+        --text: #3d1f2a;
+        --card: #f7e8ee;
+        --border: rgba(210, 140, 165, 0.25);
+        --panel: #fef0f4;
+        --accent: #d4607a;
+        --shadow: rgba(200, 100, 130, 0.2);
+        --proper: #2a0f1a;
+      }
+      body.theme-toxic {
+        --bg: #080d08;
+        --text: #d4f0c0;
+        --card: #0e160e;
+        --border: rgba(80, 200, 40, 0.22);
+        --panel: #0a120a;
+        --accent: #7cdb2a;
+        --shadow: rgba(80, 200, 30, 0.3);
+        --proper: #e8ffd8;
+      }
+      /* Marketplace */
+      .mkt-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+      }
+      .mkt-header h2 {
+        margin: 0;
+        flex: 1;
+        min-width: 120px;
+      }
+      .mkt-search {
+        flex: 1;
+        min-width: 160px;
+        padding: 0.4rem 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--panel);
+        color: var(--text);
+        font-size: 0.9rem;
+        outline: none;
+      }
+      .mkt-search:focus {
+        border-color: var(--accent);
+      }
+      .mkt-filters {
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+      }
+      .mkt-tag-btn {
+        padding: 0.25rem 0.7rem;
+        border: 1px solid var(--border);
+        border-radius: 99px;
+        background: var(--panel);
+        color: var(--text);
+        font-size: 0.78rem;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .mkt-tag-btn:hover,
+      .mkt-tag-btn.active {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+      }
+      .mkt-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 0.85rem;
+      }
+      .mkt-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition:
+          border-color 0.15s,
+          box-shadow 0.15s;
+        --mkt-thumb-bg: var(--panel);
+        --mkt-tag-bg: var(--panel);
+        --mkt-desc-op: 0.65;
+      }
+      body.theme-dark .mkt-card {
+        --mkt-thumb-bg: #272b35;
+        --mkt-tag-bg: #2e3240;
+        --mkt-desc-op: 0.7;
+      }
+      body.theme-neon .mkt-card {
+        --mkt-thumb-bg: rgba(0, 255, 228, 0.07);
+        --mkt-tag-bg: rgba(0, 255, 228, 0.09);
+      }
+      body.theme-cherry .mkt-card {
+        --mkt-thumb-bg: #321320;
+        --mkt-tag-bg: #3a1828;
+      }
+      body.theme-blueberry .mkt-card {
+        --mkt-thumb-bg: #1a1e35;
+        --mkt-tag-bg: #20243e;
+      }
+      .mkt-card:hover {
+        border-color: var(--accent);
+        box-shadow: 0 4px 20px var(--shadow);
+      }
+      .mkt-thumb {
+        width: 100%;
+        aspect-ratio: 16/9;
+        background: var(--mkt-thumb-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1.5rem;
+        padding: 1rem;
+        box-sizing: border-box;
+      }
+      .mkt-thumb img {
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+        image-rendering: pixelated;
+        filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.22));
+      }
+      .mkt-thumb .mkt-thumb-placeholder {
+        font-size: 2rem;
+        opacity: 0.3;
+      }
+      .mkt-info {
+        padding: 0.65rem 0.75rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+      }
+      .mkt-name {
+        font-weight: 700;
+        font-size: 0.92rem;
+        color: var(--text);
+      }
+      .mkt-author {
+        font-size: 0.75rem;
+        opacity: 0.5;
+        color: var(--text);
+      }
+      .mkt-owner {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--accent);
+        opacity: 1;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.2rem;
+      }
+      .mkt-desc {
+        font-size: 0.78rem;
+        opacity: var(--mkt-desc-op);
+        color: var(--text);
+        margin-top: 0.1rem;
+        line-height: 1.4;
+      }
+      .mkt-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+        margin-top: 0.2rem;
+      }
+      .mkt-tag {
+        font-size: 0.68rem;
+        padding: 0.15rem 0.5rem;
+        border-radius: 99px;
+        background: var(--mkt-tag-bg);
+        border: 1px solid var(--border);
+        color: var(--text);
+        opacity: 0.9;
+      }
+      .mkt-footer {
+        padding: 0.5rem 0.75rem;
+        border-top: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+      }
+      .mkt-downloads {
+        font-size: 0.75rem;
+        opacity: 0.5;
+        color: var(--text);
+      }
+      .mkt-install-btn {
+        padding: 0.3rem 0.75rem;
+        font-size: 0.8rem;
+        border-radius: 6px;
+        border: none;
+        background: var(--accent);
+        color: #fff;
+        cursor: pointer;
+        transition: opacity 0.15s;
+        margin-top: 0;
+      }
+      .mkt-install-btn:hover {
+        opacity: 0.85;
+      }
+      .mkt-install-btn.installed {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        color: var(--text);
+        cursor: default;
+        opacity: 0.7;
+      }
+      .mkt-install-btn.loading {
+        opacity: 0.5;
+        cursor: wait;
+      }
+      .mkt-install-btn.mkt-update-btn {
+        background: #e67e22;
+        border-color: #e67e22;
+      }
+      .mkt-install-btn.mkt-update-btn:hover {
+        opacity: 0.85;
+      }
+      .mkt-empty {
+        text-align: center;
+        padding: 3rem 1rem;
+        opacity: 0.45;
+        font-size: 0.95rem;
+        grid-column: 1/-1;
+      }
+      .mkt-status {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.6rem;
+        padding: 3rem 1rem;
+        opacity: 0.5;
+        font-size: 0.9rem;
+        grid-column: 1/-1;
+        text-align: center;
+        width: 100%;
+      }
+      .mkt-error {
+        color: #e55;
+        opacity: 1 !important;
+      }
+      .mkt-reload-btn {
+        margin-top: 0;
+        padding: 0.3rem 0.8rem;
+        font-size: 0.82rem;
+      }
+      .mkt-sort {
+        padding: 0.35rem 0.6rem;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--panel);
+        color: var(--text);
+        font-size: 0.82rem;
+        cursor: pointer;
+      }
+      .mkt-stars {
+        display: flex;
+        align-items: center;
+        gap: 0.15rem;
+        font-size: 0.85rem;
+      }
+      .mkt-stars .star {
+        color: #f5a623;
+        line-height: 1;
+        cursor: pointer;
+        transition:
+          transform 0.1s,
+          color 0.1s;
+      }
+      .mkt-stars .star.hover {
+        color: #f5a623;
+        transform: scale(1.2);
+      }
+      .mkt-stars .star-empty {
+        color: var(--border);
+        line-height: 1;
+        cursor: pointer;
+        transition: transform 0.1s;
+      }
+      .mkt-stars.voted .star,
+      .mkt-stars.voted .star-empty {
+        cursor: default;
+      }
+      .mkt-stars .rating-val {
+        color: var(--text);
+        opacity: 0.5;
+        margin-left: 0.3rem;
+        font-size: 0.72rem;
+        white-space: nowrap;
+      }
+      .mkt-rating-wrap {
+        display: flex;
+        align-items: center;
+        margin-top: 0.4rem;
+      }
+
+      /* Dynamic custom themes injected by JS */
+
+      /* Stats tab */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+      }
+      .stat-card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 1rem;
+        text-align: center;
+      }
+      .stat-card .stat-value {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--accent);
+        line-height: 1;
+      }
+      .stat-card .stat-label {
+        font-size: 0.78rem;
+        color: var(--text);
+        opacity: 0.65;
+        margin-top: 0.3rem;
+      }
+      .stat-bar-row {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin-bottom: 0.4rem;
+        font-size: 0.85rem;
+      }
+      .stat-bar-row .bar-label {
+        min-width: 120px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: var(--text);
+      }
+      .stat-bar-track {
+        flex: 1;
+        height: 6px;
+        background: var(--border);
+        border-radius: 99px;
+        overflow: hidden;
+      }
+      .stat-bar-fill {
+        height: 100%;
+        background: var(--accent);
+        border-radius: 99px;
+        transition: width 0.4s ease;
+      }
+      .stat-bar-count {
+        font-size: 0.78rem;
+        color: var(--text);
+        opacity: 0.55;
+        min-width: 2rem;
+        text-align: right;
+      }
+      .chart-wrap {
+        width: 100%;
+        height: 100px;
+        display: flex;
+        align-items: flex-end;
+        gap: 2px;
+        margin-top: 0.5rem;
+      }
+      .chart-bar {
+        flex: 1;
+        background: var(--accent);
+        border-radius: 3px 3px 0 0;
+        min-height: 2px;
+        opacity: 0.75;
+        transition: opacity 0.15s;
+      }
+      .chart-bar:hover {
+        opacity: 1;
+      }
+
+      /* Range input */
+      input[type="range"] {
+        -webkit-appearance: none;
+        width: 100%;
+        height: 4px;
+        border-radius: 99px;
+        background: var(--border);
+        outline: none;
+        cursor: pointer;
+        margin: 0.4rem 0;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--accent);
+        cursor: pointer;
+        box-shadow: 0 1px 4px var(--shadow);
+      }
+      .range-row {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+      }
+      .range-row input[type="range"] {
+        flex: 1;
+      }
+      .range-val {
+        font-size: 0.82rem;
+        color: var(--accent);
+        min-width: 2.5rem;
+        text-align: right;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="theme-transition"></div>
+    <div id="toast-container"></div>
+    <div id="info-tooltip"></div>
+    <div id="drop-overlay">
+      <div class="drop-box">
+        <div class="drop-icon">📂</div>
+        <div class="drop-title">Drop to import</div>
+        <div class="drop-hint">
+          Pack folder · Theme .json · Settings .json · grab.png + grabbing.png
+        </div>
+      </div>
+    </div>
+
+    <div id="confirm-overlay">
+      <div id="confirm-box">
+        <div id="confirm-title"></div>
+        <div id="confirm-msg"></div>
+        <div id="confirm-actions">
+          <button type="button" id="confirm-cancel" class="secondary">
+            Cancel
+          </button>
+          <button type="button" id="confirm-ok" class="danger">Confirm</button>
+        </div>
+      </div>
+    </div>
+    <div id="progress-overlay">
+      <div id="progress-box">
+        <div id="progress-title">Importing…</div>
+        <div id="progress-bar-track"><div id="progress-bar-fill"></div></div>
+        <div id="progress-status"></div>
+        <div id="progress-detail"></div>
+      </div>
+    </div>
+    <h1>Custom Grab Cursor Settings</h1>
+    <p style="text-align: center; color: #888; font-size: 0.9rem">
+      Manage your cursor packs, themes, and site rules. Changes apply
+      immediately to open pages.
+    </p>
+
+    <div class="tabs">
+      <button type="button" class="tab active" data-tab="settingsTab">
+        ⚙️ Settings
+      </button>
+      <button type="button" class="tab" data-tab="libraryTab">
+        🗂️ Library
+      </button>
+      <button type="button" class="tab" data-tab="appearanceTab">
+        🎨 Appearance
+      </button>
+      <button type="button" class="tab" data-tab="advancedTab">
+        🔧 Advanced
+      </button>
+      <button type="button" class="tab" data-tab="statsTab">📊 Stats</button>
+      <button type="button" class="tab" data-tab="marketplaceTab">
+        🛒 Marketplace
+      </button>
+    </div>
+
+    <!-- SETTINGS TAB -->
+    <div id="settingsTab" class="tab-panel active">
+      <div class="section">
+        <h2>General <i class="info-icon" data-tip="general">i</i></h2>
+        <label
+          ><input type="checkbox" id="enableCheckbox" /> Enable custom
+          cursors</label
+        >
+        <label style="margin-top: 0.5rem"
+          ><input type="checkbox" id="chromeSyncEnabled" /> Sync settings across
+          devices (Chrome Sync)</label
+        >
+        <div class="small" style="margin-top: 0.25rem">
+          When enabled, your active pack, theme, and rules sync via your Chrome
+          account. Custom pack <em>images</em> are excluded (too large for sync
+          storage).
+        </div>
+      </div>
+
+      <div class="section" id="exportSection">
+        <h2>
+          Export / Import Settings
+          <i class="info-icon" data-tip="settings-export">i</i>
+        </h2>
+        <button type="button" id="exportBtn">Export settings (.json)</button>
+        <input
+          type="file"
+          id="importBtn"
+          accept=".json,application/json"
+          style="display: none"
+        />
+        <div class="drop-zone" id="settingsDropZone">
+          <div class="dz-icon">📥</div>
+          <div class="dz-label">
+            Drop settings .json here, or
+            <span
+              style="
+                color: var(--accent);
+                text-decoration: underline;
+                cursor: pointer;
+              "
+              id="settingsDropZoneClick"
+              >browse</span
+            >
+          </div>
+          <div class="dz-hint">.json file only</div>
+        </div>
+        <div class="small">
+          Saves theme, enable state, hotspot settings, custom themes, and site
+          rules.
+        </div>
+      </div>
+
+      <div class="section" style="text-align: center">
+        <button type="button" id="resetBtn" class="danger">
+          Reset to defaults
+        </button>
+      </div>
+    </div>
+
+    <!-- LIBRARY TAB -->
+    <div id="libraryTab" class="tab-panel">
+      <div class="section">
+        <h2>Cursor Packs <i class="info-icon" data-tip="cursor-packs">i</i></h2>
+        <div
+          style="
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: space-between;
+          "
+        >
+          <button type="button" id="newPackBtn">+ Create empty pack</button>
+          <div class="view-toggle">
+            <button
+              type="button"
+              class="view-btn active"
+              id="viewGrid"
+              title="Grid view"
+            >
+              ⊞
+            </button>
+            <button
+              type="button"
+              class="view-btn"
+              id="viewCompact"
+              title="Compact view"
+            >
+              ⊟
+            </button>
+            <button
+              type="button"
+              class="view-btn"
+              id="viewList"
+              title="List view"
+            >
+              ☰
+            </button>
+          </div>
+        </div>
+        <input
+          type="text"
+          id="packSearch"
+          placeholder="🔍 Search packs…"
+          style="margin-top: 0.75rem"
+        />
+        <div class="small">
+          Click a pack to activate it. <strong>Drag cards</strong> to reorder.
+          ⭐ = favorite (pinned to top). Hover a card to preview its cursor.
+        </div>
+        <div id="packGrid" class="pack-grid" style="margin-top: 0.5rem"></div>
+      </div>
+
+      <div class="section" style="margin-top: 1rem">
+        <h3>Pack details <i class="info-icon" data-tip="pack-details">i</i></h3>
+        <div class="grid grid-2" style="align-items: flex-start; gap: 1rem">
+          <div>
+            <label
+              >Pack name:
+              <input type="text" id="packName" placeholder="My Custom Pack"
+            /></label>
+            <label
+              >Description:
+              <input
+                type="text"
+                id="packDesc"
+                placeholder="Short description of this pack"
+                maxlength="100"
+            /></label>
+            <label
+              >Tags (comma-separated):
+              <input
+                type="text"
+                id="packTags"
+                placeholder="minimal, dark, gaming…"
+            /></label>
+            <label>Pack ID: <span id="packIdLabel" class="tiny"></span></label>
+          </div>
+          <div>
+            <label>Pack preview:</label>
+            <div class="preview-row" style="flex-wrap: wrap">
+              <div style="text-align: center; width: 120px">
+                <div class="small">Grab</div>
+                <img
+                  id="grabPreview"
+                  src="resources/macos/grab.png"
+                  alt="Grab preview"
+                  loading="lazy"
+                />
+              </div>
+              <div style="text-align: center; width: 120px">
+                <div class="small">Grabbing</div>
+                <img
+                  id="grabbingPreview"
+                  src="resources/macos/grabbing.png"
+                  alt="Grabbing preview"
+                  loading="lazy"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section" style="margin-top: 1rem">
+        <h3>
+          Cursor images <i class="info-icon" data-tip="cursor-images">i</i>
+        </h3>
+        <div class="grid grid-2">
+          <div>
+            <label>Grab cursor (PNG):</label>
+            <input
+              type="file"
+              id="grabInput"
+              accept="image/png"
+              style="display: none"
+            />
+            <button type="button" class="file-btn" data-target="grabInput">
+              Choose PNG…
+            </button>
+            <input type="url" id="grabUrl" placeholder="Paste PNG image URL…" />
+          </div>
+          <div>
+            <label>Grabbing cursor (PNG):</label>
+            <input
+              type="file"
+              id="grabbingInput"
+              accept="image/png"
+              style="display: none"
+            />
+            <button type="button" class="file-btn" data-target="grabbingInput">
+              Choose PNG…
+            </button>
+            <input
+              type="url"
+              id="grabbingUrl"
+              placeholder="Paste PNG image URL…"
+            />
+          </div>
+        </div>
+        <label
+          ><input type="checkbox" id="syncHotspot" /> Use same hotspot for both
+          cursors</label
+        >
+        <div
+          id="sharedHotspot"
+          style="
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 0.5rem;
+            flex-wrap: wrap;
+          "
+        >
+          <label style="display: flex; align-items: center; margin: 0"
+            >X: <input type="number" id="hotspotX" min="0" max="64"
+          /></label>
+          <label style="display: flex; align-items: center; margin: 0"
+            >Y: <input type="number" id="hotspotY" min="0" max="64"
+          /></label>
+        </div>
+        <div id="separateHotspot" style="display: none; margin-top: 0.5rem">
+          <div style="margin-bottom: 0.5rem">
+            <div style="font-size: 0.85rem; color: #888; margin-bottom: 0.3rem">
+              Grab
+            </div>
+            <div style="display: flex; gap: 1.5rem; flex-wrap: wrap">
+              <label style="display: flex; align-items: center; margin: 0"
+                >X: <input type="number" id="hotspotGrabX" min="0" max="64"
+              /></label>
+              <label style="display: flex; align-items: center; margin: 0"
+                >Y: <input type="number" id="hotspotGrabY" min="0" max="64"
+              /></label>
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 0.85rem; color: #888; margin-bottom: 0.3rem">
+              Grabbing
+            </div>
+            <div style="display: flex; gap: 1.5rem; flex-wrap: wrap">
+              <label style="display: flex; align-items: center; margin: 0"
+                >X: <input type="number" id="hotspotGrabbingX" min="0" max="64"
+              /></label>
+              <label style="display: flex; align-items: center; margin: 0"
+                >Y: <input type="number" id="hotspotGrabbingY" min="0" max="64"
+              /></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section" id="previewSection" style="margin-top: 1rem">
+        <h2>
+          Live Preview (Sandbox) <i class="info-icon" data-tip="sandbox">i</i>
+        </h2>
+        <div id="previewSandbox">
+          <div class="sandbox-box" id="sandboxBox">Drag me</div>
+        </div>
+        <div class="small">
+          Hover and drag the box to test hotspot alignment and cursor style.
+        </div>
+      </div>
+
+      <div class="section" style="margin-top: 1rem">
+        <h3>
+          Cursor appearance
+          <i class="info-icon" data-tip="cursor-appearance">i</i>
+        </h3>
+        <label
+          >Opacity:
+          <div class="range-row">
+            <input
+              type="range"
+              id="cursorOpacity"
+              min="0.1"
+              max="1"
+              step="0.05"
+              value="1"
+            />
+            <span class="range-val" id="cursorOpacityVal">100%</span>
+          </div>
+        </label>
+        <label style="margin-top: 0.5rem"
+          >Tint color:
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              gap: 0.6rem;
+              margin-top: 0.25rem;
+            "
+          >
+            <input
+              type="color"
+              id="cursorTintColor"
+              value="#ffffff"
+              style="
+                width: 3rem;
+                height: 2rem;
+                border: 1px solid var(--border);
+                border-radius: 4px;
+                cursor: pointer;
+              "
+            />
+            <div style="flex: 1">
+              <div
+                style="
+                  font-size: 0.78rem;
+                  color: var(--text);
+                  opacity: 0.6;
+                  margin-bottom: 0.2rem;
+                "
+              >
+                Tint strength
+              </div>
+              <div class="range-row">
+                <input
+                  type="range"
+                  id="cursorTintStrength"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value="0"
+                />
+                <span class="range-val" id="cursorTintStrengthVal">0%</span>
+              </div>
+            </div>
+          </div>
+        </label>
+        <div class="small" style="margin-top: 0.4rem">
+          💡 Tint overlays a color on top of the cursor image. Set strength to 0
+          to disable. Works on all sites.
+        </div>
+      </div>
+
+      <div class="section" style="margin-top: 1rem">
+        <h3>Cursor trail <i class="info-icon" data-tip="cursor-trail">i</i></h3>
+        <label
+          ><input type="checkbox" id="trailEnabled" /> Enable cursor
+          trail</label
+        >
+        <div id="trailOptions" style="margin-top: 0.6rem">
+          <label
+            >Color:
+            <input
+              type="color"
+              id="trailColor"
+              value="#7cbbff"
+              style="margin-left: 0.4rem; width: 3rem; height: 1.8rem"
+          /></label>
+          <label
+            >Size:
+            <div class="range-row">
+              <input
+                type="range"
+                id="trailSize"
+                min="2"
+                max="24"
+                step="1"
+                value="8"
+              />
+              <span class="range-val" id="trailSizeVal">8px</span>
+            </div>
+          </label>
+          <label
+            >Length:
+            <div class="range-row">
+              <input
+                type="range"
+                id="trailLength"
+                min="3"
+                max="24"
+                step="1"
+                value="8"
+              />
+              <span class="range-val" id="trailLengthVal">8</span>
+            </div>
+          </label>
+          <label
+            ><input type="checkbox" id="trailFade" checked /> Fade trail (size +
+            opacity taper)</label
+          >
+          <label
+            >Opacity:
+            <div class="range-row">
+              <input
+                type="range"
+                id="trailOpacity"
+                min="0.05"
+                max="1"
+                step="0.05"
+                value="0.9"
+              />
+              <span class="range-val" id="trailOpacityVal">90%</span>
+            </div>
+          </label>
+          <div style="margin-top: 0.5rem">
+            <div
+              style="
+                font-size: 0.85rem;
+                margin-bottom: 0.4rem;
+                color: var(--text);
+                opacity: 0.7;
+              "
+            >
+              Show trail on:
+            </div>
+            <label style="margin-right: 1.2rem">
+              <input
+                type="radio"
+                name="trailScope"
+                id="trailScopeAll"
+                value="all"
+                checked
+              />
+              All cursor movements
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="trailScope"
+                id="trailScopeGrab"
+                value="grab-only"
+              />
+              Grab / grabbing only
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="section" style="margin-top: 1rem">
+        <h3>
+          Pack import / export
+          <i class="info-icon" data-tip="pack-import-export">i</i>
+        </h3>
+        <div class="grid grid-2">
+          <div>
+            <label>Export current pack:</label>
+            <button type="button" id="exportPackBtn">Export pack (.zip)</button>
+            <div class="small">
+              Generates a <code>.zip</code> with <code>grab.png</code>,
+              <code>grabbing.png</code>, <code>info.json</code>.
+            </div>
+            <p style="font-weight: bold" width:50%;>
+              If you find your pack ready or sharable Then Please, Consider
+              sharing it via
+              <a
+                id="mktSubmitLink"
+                href="#"
+                target="_blank"
+                rel="noopener"
+                style="color: var(--accent)"
+                >pull request</a
+              >
+            </p>
+          </div>
+          <div>
+            <label>Import pack folder:</label>
+            <input
+              type="file"
+              id="importPackFolder"
+              webkitdirectory
+              directory
+              multiple
+              style="display: none"
+            />
+            <div class="drop-zone" id="packDropZone">
+              <div class="dz-icon">📂</div>
+              <div class="dz-label">
+                Drop pack folder here, or
+                <span
+                  style="
+                    color: var(--accent);
+                    text-decoration: underline;
+                    cursor: pointer;
+                  "
+                  id="packDropZoneClick"
+                  >browse</span
+                >
+              </div>
+              <div class="dz-hint">
+                Folder must contain grab.png · grabbing.png · info.json
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>
+          info.json builder <i class="info-icon" data-tip="info-builder">i</i>
+        </h3>
+        <div class="small" style="margin-bottom: 0.85rem; opacity: 0.6">
+          Fill in the details below and click <strong>Build</strong> to download
+          a ready-to-use <code>info.json</code> for your pack. No coding needed.
+        </div>
+        <div class="grid grid-2" style="gap: 0.75rem">
+          <label
+            >Pack name <span style="color: var(--accent)">*</span>
+            <input
+              type="text"
+              id="ijName"
+              placeholder="e.g. Neon Glow"
+              maxlength="60"
+            />
+          </label>
+          <label
+            >Author
+            <input
+              type="text"
+              id="ijAuthor"
+              placeholder="Your name or username"
+              maxlength="40"
+            />
+          </label>
+          <label style="grid-column: 1/-1"
+            >Description
+            <input
+              type="text"
+              id="ijDescription"
+              placeholder="Short description (max 100 chars)"
+              maxlength="100"
+            />
+            <span
+              class="small"
+              id="ijDescCount"
+              style="opacity: 0.4; margin-top: 0.15rem; display: block"
+              >0 / 100</span
+            >
+          </label>
+          <label style="grid-column: 1/-1"
+            >Tags
+            <span class="small" style="opacity: 0.5"
+              >(comma separated, e.g. dark, minimal)</span
+            >
+            <input type="text" id="ijTags" placeholder="dark, minimal, retro" />
+          </label>
+          <label
+            >Hotspot X
+            <input type="number" id="ijHotspotX" value="16" min="0" max="63" />
+          </label>
+          <label
+            >Hotspot Y
+            <input type="number" id="ijHotspotY" value="16" min="0" max="63" />
+          </label>
+          <label
+            style="
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              grid-column: 1/-1;
+              margin-top: 0.1rem;
+            "
+          >
+            <input type="checkbox" id="ijSyncHotspot" checked />
+            <span>Sync hotspot (same position for grab &amp; grabbing)</span>
+          </label>
+
+        </div>
+
+        <!-- Separate hotspots — shown only when sync is off -->
+        <div id="ijSeparateHotspots" style="display: none; margin-top: 0.6rem">
+          <div class="small" style="opacity: 0.55; margin-bottom: 0.4rem">
+            Grab cursor hotspot:
+          </div>
+          <div class="grid grid-2" style="gap: 0.75rem">
+            <label
+              >Grab X
+              <input type="number" id="ijGrabX" value="16" min="0" max="63"
+            /></label>
+            <label
+              >Grab Y
+              <input type="number" id="ijGrabY" value="16" min="0" max="63"
+            /></label>
+          </div>
+          <div class="small" style="opacity: 0.55; margin: 0.6rem 0 0.4rem">
+            Grabbing cursor hotspot:
+          </div>
+          <div class="grid grid-2" style="gap: 0.75rem">
+            <label
+              >Grabbing X
+              <input type="number" id="ijGrabbingX" value="16" min="0" max="63"
+            /></label>
+            <label
+              >Grabbing Y
+              <input type="number" id="ijGrabbingY" value="16" min="0" max="63"
+            /></label>
+          </div>
+        </div>
+        <p style="font-weight: bold" width:50%;>
+              If you find your pack ready or sharable Then Please, Consider
+              sharing it via
+              <a
+                id="mktSubmitLink"
+                href="#"
+                target="_blank"
+                rel="noopener"
+                style="color: var(--accent)"
+                >pull request</a
+              >
+            </p>
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+          "
+        >
+          <button type="button" id="ijBuildBtn" style="min-width: 120px">
+            ⬇ Build info.json
+          </button>
+          <label
+            style="
+              display: flex;
+              align-items: center;
+              gap: 0.4rem;
+              font-size: 0.85rem;
+              cursor: pointer;
+            "
+          >
+            <input type="checkbox" id="ijClearOnBuild" checked />
+            Clear data on build
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- APPEARANCE TAB -->
+    <div id="appearanceTab" class="tab-panel">
+      <div class="section">
+        <h2>Theme <i class="info-icon" data-tip="theme">i</i></h2>
+        <label style="margin-bottom: 0.6rem"
+          ><input type="checkbox" id="osSyncTheme" /> Sync with OS dark/light
+          mode</label
+        >
+        <div
+          id="osThemePickers"
+          style="
+            display: none;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.75rem;
+          "
+        >
+          <label style="flex: 1; min-width: 180px"
+            >Light theme:
+            <select id="osLightTheme" style="margin-top: 0.25rem">
+              <optgroup label="☀️ Built-in Light">
+                <option value="light">☀️ Light</option>
+                <option value="coastal">🌊 Coastal Fresh</option>
+                <option value="parchment">🕯️ Parchment</option>
+                <option value="sakura">🌸 Sakura</option>
+              </optgroup>
+              <optgroup
+                label="☀️ Custom Light"
+                id="osLightCustomOptgroup"
+              ></optgroup>
+            </select>
+          </label>
+          <label style="flex: 1; min-width: 180px"
+            >Dark theme:
+            <select id="osDarkTheme" style="margin-top: 0.25rem">
+              <optgroup label="🌙 Built-in Dark">
+                <option value="dark" selected>🌙 Dark</option>
+                <option value="neon">⚡ Neon</option>
+                <option value="cherry">🍒 Cherry</option>
+                <option value="blueberry">🫐 Blueberry</option>
+                <option value="stormy">⛈️ Stormy Morning</option>
+                <option value="desert">🏜️ Desert Sunset</option>
+                <option value="summer">🌴 Summer</option>
+                <option value="aurora">🌌 Aurora</option>
+                <option value="espresso">☕ Espresso</option>
+                <option value="graphite">🩶 Graphite</option>
+                <option value="toxic">🧪 Toxic</option>
+              </optgroup>
+              <optgroup
+                label="🌙 Custom Dark"
+                id="osDarkCustomOptgroup"
+              ></optgroup>
+            </select>
+          </label>
+        </div>
+        <label id="manualThemeLabel"
+          >UI theme:
+          <select id="uiTheme">
+            <optgroup label="☀️ Built-in Light">
+              <option value="light">☀️ Light</option>
+              <option value="coastal">🌊 Coastal Fresh</option>
+              <option value="parchment">🕯️ Parchment</option>
+              <option value="sakura">🌸 Sakura</option>
+            </optgroup>
+            <optgroup label="🌙 Built-in Dark">
+              <option value="dark" selected>🌙 Dark</option>
+              <option value="neon">⚡ Neon</option>
+              <option value="cherry">🍒 Cherry</option>
+              <option value="blueberry">🫐 Blueberry</option>
+              <option value="stormy">⛈️ Stormy Morning</option>
+              <option value="desert">🏜️ Desert Sunset</option>
+              <option value="summer">🌴 Summer</option>
+              <option value="aurora">🌌 Aurora</option>
+              <option value="espresso">☕ Espresso</option>
+              <option value="graphite">🩶 Graphite</option>
+              <option value="toxic">🧪 Toxic</option>
+            </optgroup>
+            <optgroup
+              label="☀️ Custom Light"
+              id="customThemeLightOptgroup"
+            ></optgroup>
+            <optgroup
+              label="🌙 Custom Dark"
+              id="customThemeDarkOptgroup"
+            ></optgroup>
+          </select>
+        </label>
+        <div
+          style="
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.4rem;
+          "
+        >
+          <button
+            type="button"
+            id="cloneSelectedThemeBtn"
+            style="display: none; padding: 0.3rem 0.75rem; font-size: 0.85rem"
+          >
+            Clone theme
+          </button>
+          <button
+            type="button"
+            id="deleteSelectedThemeBtn"
+            class="danger"
+            style="display: none; padding: 0.3rem 0.75rem; font-size: 0.85rem"
+          >
+            Delete theme
+          </button>
+        </div>
+      </div>
+
+      <div class="section" id="themeEditorSection">
+        <h2>Theme Editor <i class="info-icon" data-tip="theme-editor">i</i></h2>
+        <div
+          style="
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 0.75rem;
+          "
+        >
+          <button type="button" id="newThemeBtn">+ Create theme</button>
+          <button type="button" id="exportThemeBtn" class="secondary">
+            Export theme (.json)
+          </button>
+          <input
+            type="file"
+            id="importThemeBtn"
+            accept=".json,application/json"
+            style="display: none"
+          />
+          <div
+            class="drop-zone"
+            id="themeDropZone"
+            style="margin-top: 0.5rem; min-width: 220px"
+          >
+            <div class="dz-icon">🎨</div>
+            <div class="dz-label">
+              Drop theme .json here, or
+              <span
+                style="
+                  color: var(--accent);
+                  text-decoration: underline;
+                  cursor: pointer;
+                "
+                id="themeDropZoneClick"
+                >browse</span
+              >
+            </div>
+            <div class="dz-hint">.json file only</div>
+          </div>
+        </div>
+        <div id="themeEditorForm" style="display: none">
+          <div class="grid grid-2" style="gap: 0.75rem; margin-bottom: 0.75rem">
+            <label
+              >Theme name:
+              <input type="text" id="themeNameInput" placeholder="My Theme"
+            /></label>
+            <label
+              style="
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                flex-wrap: wrap;
+                margin-left:10px;
+                margin-top:25px;
+              "
+            >
+              Mode:
+              <select
+                id="themeMode"
+                style="width: auto; margin-top: 0; flex: 1;"
+                margin-left:-30px;
+              >
+                <option value="dark">🌙 Dark</option>
+                <option value="light">☀️ Light</option>
+              </select>
+            </label>
+            <label
+              >Background (--bg):
+              <input
+                type="color"
+                id="te_bg"
+                style="margin-left: 0; width: 100%; height: 2rem"
+            /></label>
+            <label
+              >Text (--text):
+              <input
+                type="color"
+                id="te_text"
+                style="margin-left: 0; width: 100%; height: 2rem"
+            /></label>
+            <label
+              >Card (--card):
+              <input
+                type="color"
+                id="te_card"
+                style="margin-left: 0; width: 100%; height: 2rem"
+            /></label>
+            <label
+              >Panel (--panel):
+              <input
+                type="color"
+                id="te_panel"
+                style="margin-left: 0; width: 100%; height: 2rem"
+            /></label>
+            <label
+              >Accent (--accent):
+              <input
+                type="color"
+                id="te_accent"
+                style="margin-left: 0; width: 100%; height: 2rem"
+            /></label>
+            <label
+              >Proper text (--proper):
+              <input
+                type="color"
+                id="te_proper"
+                style="margin-left: 0; width: 100%; height: 2rem"
+            /></label>
+          </div>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap">
+            <button type="button" id="saveThemeBtn">Save theme</button>
+            <button
+              type="button"
+              id="deleteThemeBtn"
+              class="danger"
+              style="display: none"
+            >
+              Delete theme
+            </button>
+            <button type="button" id="cancelThemeBtn" class="secondary">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="advancedTab" class="tab-panel">
+      <div class="section">
+        <h2>Per-site Rules <i class="info-icon" data-tip="site-rules">i</i></h2>
+        <p style="font-size: 0.9rem; margin-top: 0">
+          Override which cursor pack is used on specific domains, or disable the
+          extension entirely for a site.
+        </p>
+        <div
+          style="
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 0.5rem;
+          "
+        >
+          <input
+            type="text"
+            id="newRuleDomain"
+            placeholder="e.g. youtube.com"
+            style="flex: 1; min-width: 150px; margin-top: 0"
+          />
+          <select
+            id="newRuleAction"
+            style="width: auto; margin-top: 0; flex: 0 0 auto"
+          >
+            <option value="disable">Disable extension</option>
+            <option value="pack">Use specific pack</option>
+          </select>
+          <select
+            id="newRulePack"
+            style="width: auto; margin-top: 0; flex: 0 0 auto; display: none"
+          ></select>
+          <button type="button" id="addRuleBtn" style="margin-top: 0">
+            + Add rule
+          </button>
+        </div>
+        <div id="siteRulesContainer"></div>
+        <div class="small">
+          Rules are matched by domain. Subdomains are included (e.g.
+          <code>youtube.com</code> also matches <code>www.youtube.com</code>).
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>About</h2>
+        <p style="font-size: 0.9rem">
+          Check the releases page for updates, changelogs, and new cursor packs.
+        </p>
+        <a
+          href="https://github.com/Yossof0/CustomGrab/releases/"
+          target="_blank"
+          rel="noopener"
+        >
+          <button type="button" class="secondary" style="margin-top: 0">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              style="vertical-align: middle; margin-right: 0.3rem"
+            >
+              <path
+                d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17 5.1 18 5.4 18 5.4c.6 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .3z"
+              />
+            </svg>
+            View Releases on GitHub
+          </button>
+        </a>
+      </div>
+    </div>
+
+    <!-- STATS TAB -->
+    <div id="statsTab" class="tab-panel">
+      <div class="section">
+        <h2>Usage Statistics <i class="info-icon" data-tip="stats">i</i></h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="statTotalVisits">—</div>
+            <div class="stat-label">Total page visits</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statUniqueSites">—</div>
+            <div class="stat-label">Unique sites</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statTopPack">—</div>
+            <div class="stat-label">Most used pack</div>
+          </div>
+        </div>
+        <div class="section" style="margin: 0 0 1rem">
+          <h3>Visits last 60 days</h3>
+          <div class="chart-wrap" id="statsChart"></div>
+        </div>
+        <div class="section" style="margin: 0 0 1rem">
+          <h3>Pack usage</h3>
+          <div id="statsPackBars"></div>
+        </div>
+        <div class="section" style="margin: 0">
+          <h3>Top sites</h3>
+          <div id="statsSiteBars"></div>
+        </div>
+      </div>
+      <div class="section" style="text-align: center">
+        <button type="button" id="clearStatsBtn" class="danger">
+          Clear statistics
+        </button>
+      </div>
+    </div>
+
+    <!-- MARKETPLACE TAB -->
+    <div id="marketplaceTab" class="tab-panel">
+      <div class="section">
+        <div class="mkt-header">
+          <h2>
+            🛒 Marketplace <i class="info-icon" data-tip="marketplace">i</i>
+          </h2>
+          <input
+            type="text"
+            class="mkt-search"
+            id="mktSearch"
+            placeholder="Search packs…"
+          />
+          <select class="mkt-sort" id="mktSort">
+            <option value="downloads">Most downloaded</option>
+            <option value="rating">Top rated</option>
+            <option value="newest">Newest</option>
+            <option value="name">A – Z</option>
+          </select>
+          <button
+            type="button"
+            id="mktRefreshBtn"
+            class="mkt-reload-btn"
+            title="Refresh"
+          >
+            ↺ Refresh
+          </button>
+        </div>
+        <div class="mkt-filters" id="mktFilters">
+          <button type="button" class="mkt-tag-btn active" data-tag="all">
+            All
+          </button>
+        </div>
+        <div class="mkt-grid" id="mktGrid">
+          <div class="mkt-status">Loading packs…</div>
+        </div>
+      </div>
+      <div class="small" style="text-align: center; margin-top: 0.5rem">
+        Want to share your pack?
+        <a
+          id="mktSubmitLink"
+          href="#"
+          target="_blank"
+          rel="noopener"
+          style="color: var(--accent)"
+          >Submit a pull request</a
+        >
+        to the marketplace repo.
+      </div>
+    </div>
+
+    <div class="footer">
+      Developed by Yossof0 – customize your experience!
+      <div
+        style="
+          margin-top: 0.5rem;
+          display: flex;
+          justify-content: center;
+          gap: 1.2rem;
+          align-items: center;
+        "
+      >
+        <a
+          href="https://www.youtube.com/@OverClock33"
+          target="_blank"
+          rel="noopener"
+          style="
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            text-decoration: none;
+            font-size: 0.9rem;
+          "
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.75 15.5v-7l6.5 3.5-6.5 3.5z"
+            />
+          </svg>
+          YouTube
+        </a>
+        <a
+          href="https://github.com/Yossof0/"
+          target="_blank"
+          rel="noopener"
+          style="
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            text-decoration: none;
+            font-size: 0.9rem;
+          "
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17 5.1 18 5.4 18 5.4c.6 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .3z"
+            />
+          </svg>
+          GitHub
+        </a>
+      </div>
+    </div>
+    <script src="options.js"></script>
+  </body>
+</html>

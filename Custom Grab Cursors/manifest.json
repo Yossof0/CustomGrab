@@ -1,0 +1,64 @@
+{
+  "manifest_version": 3,
+  "name": "Custom Grab Cursors",
+  "version": "5.0",
+  "description": "Transform any page's grab/grabbing cursor into stylish custom images with flexible hotspots, themes, site rules, stats and more.",
+  "icons": {
+    "16": "resources/icon16.png",
+    "48": "resources/icon48.png",
+    "128": "resources/icon128.png"
+  },
+  "permissions": ["storage", "tabs"],
+  "host_permissions": [
+    "https://raw.githubusercontent.com/*",
+    "https://cdn.jsdelivr.net/*",
+    "https://countapi.mileshilliard.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "commands": {
+    "toggle-extension": {
+      "suggested_key": {
+        "default": "Alt+Shift+G",
+        "mac": "Alt+Shift+G"
+      },
+      "description": "Toggle Custom Grab Cursors on/off"
+    }
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "resources/icon16.png",
+      "48": "resources/icon48.png",
+      "128": "resources/icon128.png"
+    }
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "resources/grab.png",
+        "resources/grabbing.png",
+        "resources/macos/grab.png",
+        "resources/macos/grabbing.png",
+        "resources/win11-light/grab.png",
+        "resources/win11-light/grabbing.png",
+        "resources/win11-dark/grab.png",
+        "resources/win11-dark/grabbing.png",
+        "resources/unavailable.svg"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

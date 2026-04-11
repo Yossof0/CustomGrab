@@ -1,0 +1,9 @@
+{
+  "id": "nicer-black",
+  "name": "Nicer Black",
+  "author": "Yossof0",
+  "description": "Nicer Cursor, Black theme",
+  "tags": ["modern", "black", "minimal", "official", "nicer"],
+  "hotspotX": 16, "hotspotY": 16,
+  "syncHotspot": true
+}

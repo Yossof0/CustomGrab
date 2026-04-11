@@ -1,0 +1,9 @@
+{
+  "id": "win11-dark",
+  "name": "Windows 11 Dark",
+  "author": "Yossof0",
+  "description": "Windows 11 style cursors, dark variant.",
+  "tags": ["windows", "dark", "minimal", "official"],
+  "hotspotX": 16, "hotspotY": 16,
+  "syncHotspot": true
+}

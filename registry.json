@@ -1,0 +1,82 @@
+{
+  "_comment": "Cursor-Gallery registry. Metadata (name, author, tags, hotspots) lives in each pack's info.json. Only put image URLs + stats here.",
+  "_version": 2,
+  "packs": [
+    {
+      "id": "arrow-light",
+      "grabUrl": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@main/packs/arrow-light/grab.png",
+      "grabbingUrl": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@main/packs/arrow-light/grabbing.png",
+      "grabPreview": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@main/packs/arrow-light/grab.png",
+      "grabbingPreview": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@main/packs/arrow-light/grabbing.png",
+      "downloads": 0,
+      "rating": null,
+      "added": "2026-03-11"
+    },
+    {
+      "id": "arrow-dark",
+      "grabUrl": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@main/packs/arrow-dark/grab.png",
+      "grabbingUrl": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@main/packs/arrow-dark/grabbing.png",
+      "grabPreview": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@main/packs/arrow-dark/grab.png",
+      "grabbingPreview": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@main/packs/arrow-dark/grabbing.png",
+      "downloads": 0,
+      "rating": null,
+      "added": "2026-03-11"
+    },
+    {
+      "id": "nicer-orange",
+      "grabUrl": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@v1.2/packs/nicer-orange/grab.png",
+      "grabbingUrl": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@v1.2/packs/nicer-orange/grabbing.png",
+      "grabPreview": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@v1.2/packs/nicer-orange/grab.png",
+      "grabbingPreview": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@v1.2/packs/nicer-orange/grabbing.png",
+      "downloads": 0,
+      "rating": null,
+      "added": "2026-03-11"
+    },
+    {
+      "id": "nicer-black",
+      "grabUrl": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@v1.3/packs/nicer-black/grab.png",
+      "grabbingUrl": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@v1.3/packs/nicer-black/grabbing.png",
+      "grabPreview": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@v1.3/packs/nicer-black/grab.png",
+      "grabbingPreview": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@v1.3/packs/nicer-black/grabbing.png",
+      "downloads": 0,
+      "rating": null,
+      "added": "2026-03-11"
+    },
+    {
+    "id": "better-normal",
+      "grabUrl": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@v1.4/packs/better-normal/grab.png",
+      "grabbingUrl": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@v1.4/packs/better-normal/grabbing.png",
+      "grabPreview": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@v1.4/packs/better-normal/grab.png",
+      "grabbingPreview": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@v1.4/packs/better-normal/grabbing.png",
+      "downloads": 0,
+      "rating": null,
+      "added": "2026-03-11"
+    },
+    {
+    "id": "enhanced-normal",
+      "grabUrl": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@v1.4/packs/enhanced-normal/grab.png",
+      "grabbingUrl": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@v1.4/packs/enhanced-normal/grabbing.png",
+      "grabPreview": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@v1.4/packs/enhanced-normal/grab.png",
+      "grabbingPreview": "https://cdn.jsdelivr.net/gh/Yossof0/Cursor-Gallery@v1.4/packs/enhanced-normal/grabbing.png",
+      "downloads": 0,
+      "rating": null,
+      "added": "2026-03-11"
+    }
+  ]
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

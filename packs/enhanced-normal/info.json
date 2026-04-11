@@ -1,0 +1,9 @@
+{
+  "id": "enhanced-normal",
+  "name": "Nice Normal",
+  "author": "Yossof0",
+  "description": "A better version of the Normal Grab cursor",
+  "tags": ["windows", "normal", "minimal", "official"],
+  "hotspotX": 16, "hotspotY": 16,
+  "syncHotspot": true
+}

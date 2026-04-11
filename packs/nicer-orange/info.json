@@ -1,0 +1,9 @@
+{
+  "id": "nicer-orange",
+  "name": "Nicer Orange",
+  "author": "Yossof0",
+  "description": "Nicer Cursor, Orange theme",
+  "tags": ["modern", "orange", "minimal", "official", "nicer"],
+  "hotspotX": 16, "hotspotY": 16,
+  "syncHotspot": true
+}

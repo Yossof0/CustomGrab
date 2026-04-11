@@ -1,0 +1,9 @@
+{
+  "id": "macos",
+  "name": "macOS",
+  "author": "Yossof0",
+  "description": "Classic macOS grab and grabbing cursors.",
+  "tags": ["macos", "minimal", "official"],
+  "hotspotX": 16, "hotspotY": 16,
+  "syncHotspot": true
+}
