@@ -1,0 +1,21 @@
+{
+  "id": "desert",
+  "name": "Desert",
+  "mode": "dark",
+  "author": "Yossof0",
+  "description": "Warm sandy browns and oranges.",
+  "tags": [
+    "dark",
+    "warm",
+    "earthy",
+    "official"
+  ],
+  "vars": {
+    "text": "#f5e6cf",
+    "card": "#3a2614",
+    "proper": "#fdf0dc",
+    "accent": "#e8954a",
+    "bg": "#2b1d0e",
+    "panel": "#33200f"
+  }
+}

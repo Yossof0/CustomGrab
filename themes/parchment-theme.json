@@ -1,0 +1,21 @@
+{
+  "id": "parchment",
+  "name": "Parchment",
+  "mode": "light",
+  "author": "Yossof0",
+  "description": "Warm, vintage light theme with aged paper tones.",
+  "tags": [
+    "light",
+    "warm",
+    "vintage",
+    "official"
+  ],
+  "vars": {
+    "text": "#3b2a1a",
+    "card": "#ede3ce",
+    "proper": "#2a1a0a",
+    "accent": "#a0522d",
+    "bg": "#f5efe0",
+    "panel": "#f9f3e6"
+  }
+}

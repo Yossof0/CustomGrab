@@ -1,0 +1,21 @@
+{
+  "id": "summer",
+  "name": "Summer",
+  "mode": "dark",
+  "author": "Yossof0",
+  "description": "Vibrant orange and teal tropical vibes.",
+  "tags": [
+    "dark",
+    "warm",
+    "vibrant",
+    "official"
+  ],
+  "vars": {
+    "text": "#e8f8f5",
+    "card": "#133840",
+    "proper": "#ffffff",
+    "accent": "#ff7b42",
+    "bg": "#0d2f35",
+    "panel": "#102e35"
+  }
+}

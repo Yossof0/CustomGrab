@@ -1,0 +1,21 @@
+{
+  "id": "graphite",
+  "name": "Graphite",
+  "mode": "dark",
+  "author": "Yossof0",
+  "description": "Neutral grayscale for professional appearance.",
+  "tags": [
+    "dark",
+    "neutral",
+    "professional",
+    "official"
+  ],
+  "vars": {
+    "text": "#d8d8d8",
+    "card": "#242424",
+    "proper": "#f0f0f0",
+    "accent": "#a0a0a0",
+    "bg": "#1a1a1a",
+    "panel": "#1f1f1f"
+  }
+}

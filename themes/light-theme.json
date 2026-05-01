@@ -1,0 +1,20 @@
+{
+  "id": "light",
+  "name": "Light",
+  "mode": "light",
+  "author": "Yossof0",
+  "description": "Clean, bright interface for daytime use.",
+  "tags": [
+    "light",
+    "minimal",
+    "official"
+  ],
+  "vars": {
+    "text": "#1f1f1f",
+    "card": "#f7f7f9",
+    "proper": "#000000",
+    "accent": "#4caf50",
+    "bg": "#ffffff",
+    "panel": "#ffffff"
+  }
+}

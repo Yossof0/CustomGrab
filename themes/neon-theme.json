@@ -1,0 +1,21 @@
+{
+  "id": "neon",
+  "name": "Neon",
+  "mode": "dark",
+  "author": "Yossof0",
+  "description": "Futuristic theme with bright cyan accents.",
+  "tags": [
+    "dark",
+    "neon",
+    "vibrant",
+    "official"
+  ],
+  "vars": {
+    "text": "#f0faff",
+    "card": "#000000",
+    "proper": "#ffffff",
+    "accent": "#00ffe4",
+    "bg": "#02030a",
+    "panel": "#000000"
+  }
+}

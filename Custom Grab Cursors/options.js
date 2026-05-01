@@ -111,6 +111,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const DEFAULT_ACTIVE_PACK = "macos";
   const DEFAULT_PACK_ORDER = ["macos", "win11-light", "win11-dark"];
+  const LOCAL_PACK_THEME_IMPORTS_ENABLED = false;
 
   let currentPack = null;
   let currentPacks = {};
@@ -2285,6 +2286,11 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   importThemeBtn.addEventListener("change", (e) => {
+    if (!LOCAL_PACK_THEME_IMPORTS_ENABLED) {
+      showToast("Local theme import is disabled. Use Marketplace instead.", "error");
+      e.target.value = "";
+      return;
+    }
     const file = e.target.files && e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
@@ -2330,6 +2336,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
   importPackFolder.addEventListener("change", (e) => {
+    if (!LOCAL_PACK_THEME_IMPORTS_ENABLED) {
+      showToast("Local pack import is disabled. Use Marketplace instead.", "error");
+      e.target.value = "";
+      return;
+    }
     if (e.target.files && e.target.files.length) {
       importPackFromFiles(e.target.files);
       e.target.value = "";
@@ -4454,6 +4465,10 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   makeDZ("packDropZone", "packDropZoneClick", "importPackFolder", (files) => {
+    if (!LOCAL_PACK_THEME_IMPORTS_ENABLED) {
+      showToast("Local pack import is disabled. Use Marketplace instead.", "error");
+      return;
+    }
     importPackFromFiles(files);
   });
 
@@ -4462,6 +4477,13 @@ document.addEventListener("DOMContentLoaded", () => {
     "themeDropZoneClick",
     "importThemeBtn",
     async (files) => {
+      if (!LOCAL_PACK_THEME_IMPORTS_ENABLED) {
+        showToast(
+          "Local theme import is disabled. Use Marketplace instead.",
+          "error",
+        );
+        return;
+      }
       const json = files.find((f) => f.name.endsWith(".json"));
       if (!json) {
         showToast("Drop a .json file", "error");
@@ -4526,6 +4548,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const entries = items.map((i) => i.webkitGetAsEntry?.()).filter(Boolean);
     const folderEntry = entries.find((en) => en.isDirectory);
     if (folderEntry) {
+      if (!LOCAL_PACK_THEME_IMPORTS_ENABLED) {
+        showToast("Local pack import is disabled. Use Marketplace instead.", "error");
+        return;
+      }
       // Collect files from the folder
       const folderFiles = await readFolderEntry(folderEntry);
       importPackFromFiles(folderFiles);
@@ -4540,6 +4566,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Two PNGs dropped → quick pack from grab + grabbing
     if (pngs.length >= 2) {
+      if (!LOCAL_PACK_THEME_IMPORTS_ENABLED) {
+        showToast("Local pack import is disabled. Use Marketplace instead.", "error");
+        return;
+      }
       const grab =
         pngs.find(
           (f) =>
@@ -4567,6 +4597,13 @@ document.addEventListener("DOMContentLoaded", () => {
         parsed.type === "custom-theme" ||
         (parsed.name && parsed.colors && !parsed.packs)
       ) {
+        if (!LOCAL_PACK_THEME_IMPORTS_ENABLED) {
+          showToast(
+            "Local theme import is disabled. Use Marketplace instead.",
+            "error",
+          );
+          return;
+        }
         // Looks like a theme
         importThemeFromObject(parsed);
       } else {

@@ -1,0 +1,21 @@
+{
+  "id": "aurora",
+  "name": "Aurora",
+  "mode": "dark",
+  "author": "Yossof0",
+  "description": "Mystical dark theme inspired by Northern Lights.",
+  "tags": [
+    "dark",
+    "cool",
+    "mystical",
+    "official"
+  ],
+  "vars": {
+    "text": "#d0eee8",
+    "card": "#0d1a24",
+    "proper": "#e8fff8",
+    "accent": "#3dd6a0",
+    "bg": "#080f1a",
+    "panel": "#0a1520"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "id": "dark",
+  "name": "Dark",
+  "mode": "dark",
+  "author": "Yossof0",
+  "description": "Comfortable dark interface with blue accents.",
+  "tags": [
+    "dark",
+    "minimal",
+    "official"
+  ],
+  "vars": {
+    "text": "#e5e5e5",
+    "card": "#1e2028",
+    "proper": "#ffffff",
+    "accent": "#7cbbff",
+    "bg": "#181a1f",
+    "panel": "#1c1f25"
+  }
+}

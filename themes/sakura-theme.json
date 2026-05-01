@@ -1,0 +1,21 @@
+{
+  "id": "sakura",
+  "name": "Sakura",
+  "mode": "light",
+  "author": "Yossof0",
+  "description": "Delicate light theme with soft pink tones.",
+  "tags": [
+    "light",
+    "warm",
+    "elegant",
+    "official"
+  ],
+  "vars": {
+    "text": "#3d1f2a",
+    "card": "#f7e8ee",
+    "proper": "#2a0f1a",
+    "accent": "#d4607a",
+    "bg": "#fdf6f8",
+    "panel": "#fef0f4"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "id": "cherry",
+  "name": "Cherry",
+  "mode": "dark",
+  "author": "Yossof0",
+  "description": "Warm red-pink theme inspired by cherry blossoms.",
+  "tags": [
+    "dark",
+    "warm",
+    "vibrant",
+    "official"
+  ],
+  "vars": {
+    "text": "#ffeeff",
+    "card": "#2a111f",
+    "proper": "#ffffff",
+    "accent": "#ff2d84",
+    "bg": "#1b0b15",
+    "panel": "#2b1120"
+  }
+}

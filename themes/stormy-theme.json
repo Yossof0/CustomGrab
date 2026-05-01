@@ -1,0 +1,21 @@
+{
+  "id": "stormy",
+  "name": "Stormy",
+  "mode": "dark",
+  "author": "Yossof0",
+  "description": "Cool blue-gray palette evoking stormy skies.",
+  "tags": [
+    "dark",
+    "cool",
+    "professional",
+    "official"
+  ],
+  "vars": {
+    "text": "#cdd6e8",
+    "card": "#232c3d",
+    "proper": "#e8eef7",
+    "accent": "#7fa8d8",
+    "bg": "#1c2333",
+    "panel": "#1e2738"
+  }
+}

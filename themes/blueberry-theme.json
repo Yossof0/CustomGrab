@@ -1,0 +1,20 @@
+{
+  "id": "blueberry",
+  "name": "Blueberry",
+  "mode": "dark",
+  "author": "Yossof0",
+  "description": "Deep indigo with soft blue accents.",
+  "tags": [
+    "dark",
+    "cool",
+    "official"
+  ],
+  "vars": {
+    "text": "#dde3ff",
+    "card": "#13162a",
+    "proper": "#ffffff",
+    "accent": "#7b6fff",
+    "bg": "#0d0f1a",
+    "panel": "#151829"
+  }
+}

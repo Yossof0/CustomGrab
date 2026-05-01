@@ -1,0 +1,21 @@
+{
+  "id": "toxic",
+  "name": "Toxic",
+  "mode": "dark",
+  "author": "Yossof0",
+  "description": "High-contrast dark theme with bright lime accents.",
+  "tags": [
+    "dark",
+    "vibrant",
+    "high-contrast",
+    "official"
+  ],
+  "vars": {
+    "text": "#d4f0c0",
+    "card": "#0e160e",
+    "proper": "#e8ffd8",
+    "accent": "#7cdb2a",
+    "bg": "#080d08",
+    "panel": "#0a120a"
+  }
+}

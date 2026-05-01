@@ -1,0 +1,20 @@
+{
+  "id": "coastal",
+  "name": "Coastal",
+  "mode": "light",
+  "author": "Yossof0",
+  "description": "Fresh sea-inspired light theme with soft blues.",
+  "tags": [
+    "light",
+    "cool",
+    "official"
+  ],
+  "vars": {
+    "text": "#1a3a30",
+    "card": "#e8f7f0",
+    "proper": "#0e2820",
+    "accent": "#2eb87a",
+    "bg": "#f5fdf8",
+    "panel": "#f0fbf5"
+  }
+}
