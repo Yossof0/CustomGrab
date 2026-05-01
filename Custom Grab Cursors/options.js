@@ -28,6 +28,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const viewGridBtn = document.getElementById("viewGrid");
   const viewCompactBtn = document.getElementById("viewCompact");
   const viewListBtn = document.getElementById("viewList");
+  const themeViewGridBtn = document.getElementById("themeViewGrid");
+  const themeViewCompactBtn = document.getElementById("themeViewCompact");
+  const themeViewListBtn = document.getElementById("themeViewList");
+  const themeGrid = document.getElementById("themeGrid");
+  const themeEditorBackdrop = document.getElementById("themeEditorBackdrop");
 
   const resetBtn = document.getElementById("resetBtn");
   const exportBtn = document.getElementById("exportBtn");
@@ -114,6 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let siteRules = []; // [{ domain, action, packId? }]
   let dragSrcId = null;
   let currentViewMode = "grid"; // 'grid' | 'compact' | 'list'
+  let currentThemeViewMode = "grid";
   let osThemeSyncEnabled = false;
   let osLightThemeValue = "light";
   let osDarkThemeValue = "dark";
@@ -205,6 +211,25 @@ document.addEventListener("DOMContentLoaded", () => {
   viewGridBtn.addEventListener("click", () => setViewMode("grid"));
   viewCompactBtn.addEventListener("click", () => setViewMode("compact"));
   viewListBtn.addEventListener("click", () => setViewMode("list"));
+
+  function setThemeViewMode(mode, save = true) {
+    currentThemeViewMode = mode;
+    themeGrid.classList.remove("view-compact", "view-list");
+    if (mode === "compact") themeGrid.classList.add("view-compact");
+    if (mode === "list") themeGrid.classList.add("view-list");
+    [themeViewGridBtn, themeViewCompactBtn, themeViewListBtn].forEach((b) =>
+      b.classList.remove("active"),
+    );
+    if (mode === "grid") themeViewGridBtn.classList.add("active");
+    if (mode === "compact") themeViewCompactBtn.classList.add("active");
+    if (mode === "list") themeViewListBtn.classList.add("active");
+    if (save) saveSetting("themeViewMode", mode);
+  }
+  themeViewGridBtn?.addEventListener("click", () => setThemeViewMode("grid"));
+  themeViewCompactBtn?.addEventListener("click", () =>
+    setThemeViewMode("compact"),
+  );
+  themeViewListBtn?.addEventListener("click", () => setThemeViewMode("list"));
 
   // ── OS theme sync ─────────────────────────────────────────────────────────
 
@@ -345,23 +370,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ── Theme system ──────────────────────────────────────────────────────────
 
-  const BUILTIN_THEMES = [
-    "light",
-    "dark",
-    "neon",
-    "cherry",
-    "blueberry",
-    "stormy",
-    "desert",
-    "coastal",
-    "summer",
-    "parchment",
-    "aurora",
-    "espresso",
-    "graphite",
-    "sakura",
-    "toxic",
-  ];
+  const BUILTIN_THEMES = ["light", "dark"];
   const BUILTIN_THEME_VARS = {
     light: {
       bg: "#ffffff",
@@ -486,6 +495,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   let customThemes = {};
   let editingThemeId = null;
+  let pendingThemeSource = "created";
 
   const themeTransitionEl = document.getElementById("theme-transition");
   let themeTransitionTimer = null;
@@ -544,7 +554,39 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function loadCustomThemes(themes) {
-    customThemes = themes || {};
+    const normalized = {};
+    Object.entries(themes || {}).forEach(([key, raw]) => {
+      if (!raw) return;
+      if (raw.vars && raw.name) {
+        const id = raw.id || key;
+        normalized[id] = {
+          ...raw,
+          id,
+          mode: raw.mode === "light" ? "light" : "dark",
+          source: raw.source || (raw.fromMarketplace ? "installed" : "created"),
+        };
+        return;
+      }
+      // Backward compatibility for malformed theme imports: { name: colors }
+      if (typeof raw === "object" && raw.bg && raw.text) {
+        normalized[key] = {
+          id: key,
+          name: key,
+          mode: "dark",
+          source: "imported",
+          readonly: false,
+          vars: {
+            bg: raw.bg,
+            text: raw.text,
+            card: raw.card || raw.panel || raw.bg,
+            panel: raw.panel || raw.card || raw.bg,
+            accent: raw.accent || "#6c63ff",
+            proper: raw.proper || "#ffffff",
+          },
+        };
+      }
+    });
+    customThemes = normalized;
     Object.values(customThemes).forEach(injectCustomThemeStyle);
     const prevValue = uiTheme.value;
     const lightGroup = document.getElementById("customThemeLightOptgroup");
@@ -563,6 +605,7 @@ document.addEventListener("DOMContentLoaded", () => {
       );
       if (exists) uiTheme.value = prevValue;
     }
+    renderThemeGrid();
     syncOsCustomOptgroups();
   }
 
@@ -571,12 +614,22 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function openThemeEditor(themeId) {
+    if (themeId && customThemes[themeId]) {
+      const ct = customThemes[themeId];
+      if (ct.fromMarketplace || ct.source === "installed") {
+        showToast("Installed themes cannot be edited", "error");
+        return;
+      }
+    }
     editingThemeId = themeId || null;
+    themeEditorBackdrop?.classList.add("show");
+    themeEditorForm.classList.add("theme-modal-open");
     themeEditorForm.style.display = "";
     if (themeId && customThemes[themeId]) {
       const ct = customThemes[themeId];
       themeNameInput.value = ct.name;
       themeMode.value = ct.mode || "dark";
+      pendingThemeSource = ct.source || "created";
       Object.keys(te).forEach((k) => {
         te[k].value = ct.vars[k] || "#ffffff";
       });
@@ -590,13 +643,17 @@ document.addEventListener("DOMContentLoaded", () => {
       te.panel.value = "#1e1e30";
       te.accent.value = "#6c63ff";
       te.proper.value = "#ffffff";
+      pendingThemeSource = "created";
       deleteThemeBtn.style.display = "none";
     }
   }
 
   function closeThemeEditor() {
     themeEditorForm.style.display = "none";
+    themeEditorForm.classList.remove("theme-modal-open");
+    themeEditorBackdrop?.classList.remove("show");
     editingThemeId = null;
+    pendingThemeSource = "created";
   }
 
   // ── Utilities ─────────────────────────────────────────────────────────────
@@ -807,6 +864,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "customThemes",
         "siteRules",
         "packViewMode",
+        "themeViewMode",
         "osThemeSync",
         "osLightTheme",
         "osDarkTheme",
@@ -836,6 +894,7 @@ document.addEventListener("DOMContentLoaded", () => {
           enableCustom: items.enableCustom !== false,
           uiTheme: items.uiTheme || "dark",
           packViewMode: items.packViewMode || "grid",
+          themeViewMode: items.themeViewMode || "grid",
           osThemeSync: !!items.osThemeSync,
         });
       },
@@ -1029,6 +1088,7 @@ document.addEventListener("DOMContentLoaded", () => {
         enableCustom,
         uiTheme: theme,
         packViewMode,
+        themeViewMode,
         osThemeSync,
       }) => {
         const updatedPacks = mergeBuiltInPacks(packs);
@@ -1043,6 +1103,7 @@ document.addEventListener("DOMContentLoaded", () => {
           enableCustom,
           theme,
           packViewMode,
+          themeViewMode,
           osThemeSync,
         });
       },
@@ -1385,6 +1446,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "customThemes",
         "siteRules",
         "packViewMode",
+        "themeViewMode",
         "osThemeSync",
         "osLightTheme",
         "osDarkTheme",
@@ -1412,6 +1474,7 @@ document.addEventListener("DOMContentLoaded", () => {
               enableCustom,
               theme,
               packViewMode,
+              themeViewMode,
               osThemeSync,
             }) => {
               osSyncTheme.checked = osThemeSync;
@@ -1426,7 +1489,9 @@ document.addEventListener("DOMContentLoaded", () => {
               if (!uiTheme.value) uiTheme.value = "dark";
               updateDeleteThemeBtn();
               setViewMode(packViewMode || "grid", false);
+              setThemeViewMode(themeViewMode || "grid", false);
               renderPackGrid(packs, activePackId);
+              renderThemeGrid();
               applyPackState(activePack);
               renderSiteRules();
               populateRulePackSelect();
@@ -1941,39 +2006,145 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ── Theme UI ──────────────────────────────────────────────────────────────
 
+  function getThemeSourceInfo(themeId) {
+    if (BUILTIN_THEMES.includes(themeId))
+      return { label: "Built-in", className: "src-builtin", editable: false };
+    const ct = customThemes[themeId];
+    if (!ct) return { label: "Created", className: "src-created", editable: true };
+    if (ct.fromMarketplace || ct.source === "installed")
+      return { label: "Installed", className: "src-installed", editable: false };
+    if (ct.source === "imported")
+      return { label: "Imported", className: "src-imported", editable: true };
+    if (ct.source === "cloned")
+      return { label: "Cloned", className: "src-cloned", editable: true };
+    return { label: "Created", className: "src-created", editable: true };
+  }
+
+  function cloneThemeById(themeId) {
+    let vars, name, mode;
+    if (BUILTIN_THEMES.includes(themeId)) {
+      vars = { ...BUILTIN_THEME_VARS[themeId] };
+      name = uiTheme.options[uiTheme.selectedIndex].text + " (copy)";
+      mode = themeId === "light" ? "light" : "dark";
+    } else if (customThemes[themeId]) {
+      vars = { ...customThemes[themeId].vars };
+      name = customThemes[themeId].name + " (copy)";
+      mode = customThemes[themeId].mode || "dark";
+    } else return;
+    openThemeEditor(null);
+    pendingThemeSource = "cloned";
+    themeNameInput.value = name;
+    themeMode.value = mode;
+    Object.keys(te).forEach((k) => {
+      if (vars[k]) te[k].value = vars[k];
+    });
+  }
+
+  function renderThemeGrid() {
+    if (!themeGrid) return;
+    const current = uiTheme.value || "dark";
+    const items = [
+      ...BUILTIN_THEMES.map((id) => ({
+        id,
+        name: id[0].toUpperCase() + id.slice(1),
+        mode: id === "light" ? "light" : "dark",
+        vars: BUILTIN_THEME_VARS[id],
+        builtin: true,
+      })),
+      ...Object.values(customThemes).map((ct) => ({
+        ...ct,
+        builtin: false,
+      })),
+    ];
+    themeGrid.innerHTML = "";
+    items.forEach((theme) => {
+      const source = getThemeSourceInfo(theme.id);
+      const card = document.createElement("div");
+      card.className = "theme-card" + (theme.id === current ? " active" : "");
+      const title = document.createElement("div");
+      title.className = "theme-title";
+      title.innerHTML = `<span>${theme.name}</span><span class="src-badge ${source.className}">${source.label}</span>`;
+      const mode = document.createElement("div");
+      mode.className = "theme-mode small";
+      mode.textContent = theme.mode === "light" ? "☀ Light" : "🌙 Dark";
+      const desc = document.createElement("div");
+      desc.className = "theme-desc small";
+      desc.textContent = theme.description || "";
+      const palette = document.createElement("div");
+      palette.className = "theme-palette";
+      ["bg", "panel", "card", "accent", "text", "proper"].forEach((k) => {
+        const chip = document.createElement("span");
+        chip.className = "theme-palette-chip";
+        chip.style.background = theme.vars?.[k] || "#888";
+        palette.appendChild(chip);
+      });
+      const actions = document.createElement("div");
+      actions.className = "pack-actions";
+      const useBtn = document.createElement("button");
+      useBtn.type = "button";
+      useBtn.className = theme.id === current ? "secondary" : "";
+      useBtn.textContent = theme.id === current ? "Active" : "Use";
+      useBtn.disabled = theme.id === current;
+      useBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        uiTheme.value = theme.id;
+        applyTheme(theme.id);
+        saveSetting("uiTheme", theme.id);
+        updateDeleteThemeBtn();
+        renderThemeGrid();
+      });
+      const cloneBtn = document.createElement("button");
+      cloneBtn.type = "button";
+      cloneBtn.textContent = "Clone";
+      cloneBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        cloneThemeById(theme.id);
+      });
+      actions.append(useBtn, cloneBtn);
+      if (!theme.builtin) {
+        const editBtn = document.createElement("button");
+        editBtn.type = "button";
+        editBtn.textContent = "Edit";
+        editBtn.disabled = !source.editable;
+        editBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (source.editable) openThemeEditor(theme.id);
+        });
+        actions.appendChild(editBtn);
+      }
+      card.append(title, mode, desc, palette, actions);
+      card.addEventListener("click", () => {
+        uiTheme.value = theme.id;
+        applyTheme(theme.id);
+        saveSetting("uiTheme", theme.id);
+        updateDeleteThemeBtn();
+        renderThemeGrid();
+      });
+      themeGrid.appendChild(card);
+    });
+  }
+
   function updateDeleteThemeBtn() {
     const val = uiTheme.value;
-    const isCustom = !BUILTIN_THEMES.includes(val) && !!customThemes[val];
+    const ct = customThemes[val];
+    const isCustom = !BUILTIN_THEMES.includes(val) && !!ct;
     const isBuiltin = BUILTIN_THEMES.includes(val);
-    deleteSelectedThemeBtn.style.display = isCustom ? "" : "none";
+    const isInstalled = !!ct && (ct.fromMarketplace || ct.source === "installed");
+    const isEditable = !!ct && !isInstalled;
+    deleteSelectedThemeBtn.style.display = isEditable ? "" : "none";
     cloneSelectedThemeBtn.style.display = isCustom || isBuiltin ? "" : "none";
+    renderThemeGrid();
   }
 
   uiTheme.addEventListener("change", () => {
     applyTheme(uiTheme.value);
     saveSetting("uiTheme", uiTheme.value);
     updateDeleteThemeBtn();
+    renderThemeGrid();
   });
 
   cloneSelectedThemeBtn.addEventListener("click", () => {
-    const val = uiTheme.value;
-    let vars, name, mode;
-    if (BUILTIN_THEMES.includes(val)) {
-      vars = { ...BUILTIN_THEME_VARS[val] };
-      name = uiTheme.options[uiTheme.selectedIndex].text + " (copy)";
-      const LIGHT_THEMES = ["light", "coastal", "parchment", "sakura"];
-      mode = LIGHT_THEMES.includes(val) ? "light" : "dark";
-    } else if (customThemes[val]) {
-      vars = { ...customThemes[val].vars };
-      name = customThemes[val].name + " (copy)";
-      mode = customThemes[val].mode || "dark";
-    } else return;
-    openThemeEditor(null);
-    themeNameInput.value = name;
-    themeMode.value = mode;
-    Object.keys(te).forEach((k) => {
-      if (vars[k]) te[k].value = vars[k];
-    });
+    cloneThemeById(uiTheme.value);
   });
 
   deleteSelectedThemeBtn.addEventListener("click", async () => {
@@ -2003,6 +2174,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   newThemeBtn.addEventListener("click", () => openThemeEditor(null));
   cancelThemeBtn.addEventListener("click", closeThemeEditor);
+  themeEditorBackdrop?.addEventListener("click", closeThemeEditor);
 
   Object.values(te).forEach((input) => {
     input.addEventListener("input", () => {
@@ -2038,6 +2210,8 @@ document.addEventListener("DOMContentLoaded", () => {
       id,
       name,
       mode: themeMode.value || "dark",
+      source: pendingThemeSource || "created",
+      readonly: false,
       vars: {
         bg: te.bg.value,
         text: te.text.value,
@@ -2099,6 +2273,10 @@ document.addEventListener("DOMContentLoaded", () => {
       showToast("No custom theme selected", "error");
       return;
     }
+    if (ct.fromMarketplace || ct.source === "installed") {
+      showToast("Installed themes cannot be exported", "error");
+      return;
+    }
     downloadBlob(
       new Blob([JSON.stringify(ct, null, 2)], { type: "application/json" }),
       `theme-${ct.name.replace(/[^a-z0-9]/gi, "_") || "custom"}.json`,
@@ -2125,6 +2303,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       ct.id = `custom-${Date.now()}`;
       ct.mode = ct.mode || "dark";
+      ct.source = "imported";
+      ct.readonly = false;
       customThemes[ct.id] = ct;
       injectCustomThemeStyle(ct);
       saveCustomThemes(() => {
@@ -2873,6 +3053,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const MARKETPLACE_SUBMIT_URL = "https://github.com/Yossof0/CustomGrab/pulls";
   const COUNT_BASE = "https://countapi.mileshilliard.com/api/v1";
   const COUNT_NS = "cursor-gallery"; // namespace prefix for all pack keys
+  const REMOTE_REPO_OWNER = "Yossof0";
+  const REMOTE_REPO_NAME = "CustomGrab";
+  const REMOTE_REPO_BRANCH = "main";
+  const REMOTE_CDN_BASE = `https://cdn.jsdelivr.net/gh/${REMOTE_REPO_OWNER}/${REMOTE_REPO_NAME}@${REMOTE_REPO_BRANCH}`;
+  const REMOTE_TREE_API = `https://api.github.com/repos/${REMOTE_REPO_OWNER}/${REMOTE_REPO_NAME}/git/trees/${REMOTE_REPO_BRANCH}?recursive=1`;
 
   async function countHit(packId) {
     try {
@@ -2944,22 +3129,33 @@ document.addEventListener("DOMContentLoaded", () => {
   const mktSort = document.getElementById("mktSort");
   const mktFilters = document.getElementById("mktFilters");
   const mktRefreshBtn = document.getElementById("mktRefreshBtn");
-  const mktSubmitLink = document.getElementById("mktSubmitLink");
+  const mktModePacksBtn = document.getElementById("mktModePacks");
+  const mktModeThemesBtn = document.getElementById("mktModeThemes");
 
-  mktSubmitLink.href = MARKETPLACE_SUBMIT_URL;
+  document.querySelectorAll("#mktSubmitLink").forEach((el) => {
+    el.href = MARKETPLACE_SUBMIT_URL;
+  });
 
   let mktAllPacks = [];
+  let mktAllThemes = [];
   let mktActiveTag = "all";
+  let mktMode = "packs"; // packs | themes
   let mktInitialized = false;
   let mktInstalledMap = new Map(); // id → installedAt date string
+  let mktInstalledThemesMap = new Map(); // id → installedAt date string
 
   function refreshInstalledIds(cb) {
-    chrome.storage.local.get(["packs"], (items) => {
+    chrome.storage.local.get(["packs", "customThemes"], (items) => {
       mktInstalledMap = new Map(
         Object.entries(items.packs || {}).map(([id, p]) => [
           id,
           p.installedAt || "",
         ]),
+      );
+      mktInstalledThemesMap = new Map(
+        Object.values(items.customThemes || {})
+          .filter((t) => t && (t.fromMarketplace || t.source === "installed"))
+          .map((t) => [t.id, t.installedAt || ""]),
       );
       if (cb) cb();
     });
@@ -3301,11 +3497,126 @@ document.addEventListener("DOMContentLoaded", () => {
     ],
   };
 
+  function mktRatingStorageKey(type, id) {
+    return `${type}:${id}`;
+  }
+
+  function mktCounterKey(type, id) {
+    return type === "themes" ? `theme-${id}` : id;
+  }
+
+  function mktRatingCounterKey(type, id) {
+    return type === "themes" ? `theme-${id}` : id;
+  }
+
+  async function fetchRemoteTreePaths() {
+    const treeRes = await fetch(REMOTE_TREE_API, { cache: "no-store" });
+    if (!treeRes.ok) throw new Error("Failed to fetch repository tree");
+    const tree = await treeRes.json();
+    return Array.isArray(tree.tree) ? tree.tree : [];
+  }
+
+  async function fetchRemoteJson(path) {
+    const rawUrl = `https://raw.githubusercontent.com/${REMOTE_REPO_OWNER}/${REMOTE_REPO_NAME}/${REMOTE_REPO_BRANCH}/${path}`;
+    const res = await fetch(rawUrl, { cache: "no-store" });
+    if (!res.ok) throw new Error(`Failed to fetch ${path}`);
+    return res.json();
+  }
+
+  function normalizeMarketplacePack(info, path, idx) {
+    const folder = path.split("/").slice(0, -1).join("/");
+    const id = info.id || folder.split("/").pop() || `pack-${idx}`;
+    return {
+      id,
+      name: info.name || id,
+      author: info.author || "Unknown",
+      description: info.description || "",
+      tags: Array.isArray(info.tags) ? info.tags : [],
+      grabUrl: `${REMOTE_CDN_BASE}/${folder}/grab.png`,
+      grabbingUrl: `${REMOTE_CDN_BASE}/${folder}/grabbing.png`,
+      grabPreview: `${REMOTE_CDN_BASE}/${folder}/grab.png`,
+      grabbingPreview: `${REMOTE_CDN_BASE}/${folder}/grabbing.png`,
+      hotspotX: info.hotspotX ?? 16,
+      hotspotY: info.hotspotY ?? 16,
+      hotspotGrabX: info.hotspotGrabX ?? info.hotspotX ?? 16,
+      hotspotGrabY: info.hotspotGrabY ?? info.hotspotY ?? 16,
+      hotspotGrabbingX: info.hotspotGrabbingX ?? info.hotspotX ?? 16,
+      hotspotGrabbingY: info.hotspotGrabbingY ?? info.hotspotY ?? 16,
+      syncHotspot: info.syncHotspot !== false,
+      downloads: 0,
+      liveRating: { stars: 0, votes: 0, avg: null },
+      registryIndex: idx,
+      remotePath: path,
+    };
+  }
+
+  function normalizeMarketplaceTheme(info, path, idx) {
+    const nameFromFile = path.split("/").pop().replace(/\.json$/i, "");
+    const id =
+      info.id || nameFromFile.replace(/-theme$/i, "").replace(/[^a-z0-9-]/gi, "-");
+    const vars = info.vars || info.colors || {};
+    return {
+      id,
+      name: info.name || id,
+      author: info.author || "Unknown",
+      description: info.description || "",
+      tags: Array.isArray(info.tags) ? info.tags : [],
+      mode: info.mode === "light" ? "light" : "dark",
+      vars: {
+        bg: vars.bg || vars.background || "#1a1a2e",
+        text: vars.text || "#e0e0e0",
+        card: vars.card || "#222235",
+        panel: vars.panel || "#1e1e30",
+        accent: vars.accent || "#6c63ff",
+        proper: vars.proper || "#ffffff",
+      },
+      downloads: 0,
+      liveRating: { stars: 0, votes: 0, avg: null },
+      registryIndex: idx,
+      remotePath: path,
+    };
+  }
+
+  async function hydrateMarketplaceItem(type, item) {
+    const counterKey = mktCounterKey(type, item.id);
+    const ratingKey = mktRatingCounterKey(type, item.id);
+    const [downloads, liveRating] = await Promise.all([
+      countGet(counterKey),
+      fetchLiveRating(ratingKey),
+    ]);
+    item.downloads = downloads ?? item.downloads ?? 0;
+    item.liveRating = liveRating || { stars: 0, votes: 0, avg: null };
+    return item;
+  }
+
   async function fetchRegistry(force = false) {
-    mktGrid.innerHTML = '<div class="mkt-status">Loading packs…</div>';
+    mktGrid.innerHTML = `<div class="mkt-status">Loading ${mktMode}…</div>`;
     try {
-      // Load packs from hardcoded metadata (no network fetch needed)
-      mktAllPacks = [...PACKAGE_METADATA.packs];
+      const tree = await fetchRemoteTreePaths();
+      const packPaths = tree
+        .filter((n) => n.type === "blob" && /^packs\/[^/]+\/info\.json$/i.test(n.path))
+        .map((n) => n.path);
+      const themePaths = tree
+        .filter((n) => n.type === "blob" && /^themes\/[^/]+-theme\.json$/i.test(n.path))
+        .map((n) => n.path);
+
+      const [packJsons, themeJsons] = await Promise.all([
+        Promise.all(packPaths.map((p) => fetchRemoteJson(p).catch(() => null))),
+        Promise.all(themePaths.map((p) => fetchRemoteJson(p).catch(() => null))),
+      ]);
+
+      mktAllPacks = packJsons
+        .map((info, idx) => (info ? normalizeMarketplacePack(info, packPaths[idx], idx) : null))
+        .filter(Boolean);
+      mktAllThemes = themeJsons
+        .map((info, idx) => (info ? normalizeMarketplaceTheme(info, themePaths[idx], idx) : null))
+        .filter(Boolean);
+
+      await Promise.all([
+        ...mktAllPacks.map((item) => hydrateMarketplaceItem("packs", item)),
+        ...mktAllThemes.map((item) => hydrateMarketplaceItem("themes", item)),
+      ]);
+
       buildTagFilters();
       renderMarketplaceGrid();
     } catch (e) {
@@ -3321,9 +3632,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function getMarketplaceItemsByMode() {
+    return mktMode === "themes" ? mktAllThemes : mktAllPacks;
+  }
+
   function buildTagFilters() {
     const tagCounts = {};
-    mktAllPacks.forEach((p) =>
+    getMarketplaceItemsByMode().forEach((p) =>
       (p.tags || []).forEach((t) => {
         tagCounts[t] = (tagCounts[t] || 0) + 1;
       }),
@@ -3351,9 +3666,9 @@ document.addEventListener("DOMContentLoaded", () => {
     sorted.forEach((tag) => mktFilters.appendChild(makeTagBtn(tag, tag)));
   }
 
-  function getFilteredSortedPacks() {
+  function getFilteredSortedMarketplaceItems() {
     const q = mktSearch.value.trim().toLowerCase();
-    let packs = mktAllPacks.filter((p) => {
+    let items = getMarketplaceItemsByMode().filter((p) => {
       const matchTag =
         mktActiveTag === "all" || (p.tags || []).includes(mktActiveTag);
       const matchText =
@@ -3366,27 +3681,126 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     const sort = mktSort.value;
     if (sort === "downloads")
-      packs.sort((a, b) => (b.downloads || 0) - (a.downloads || 0));
+      items.sort((a, b) => (b.downloads || 0) - (a.downloads || 0));
     else if (sort === "rating")
-      packs.sort(
-        (a, b) => (b.liveRating?.avg ?? -1) - (a.liveRating?.avg ?? -1),
-      );
+      items.sort((a, b) => (b.liveRating?.avg ?? -1) - (a.liveRating?.avg ?? -1));
     else if (sort === "newest")
-      packs.sort((a, b) => (b.registryIndex ?? 0) - (a.registryIndex ?? 0));
+      items.sort((a, b) => (b.registryIndex ?? 0) - (a.registryIndex ?? 0));
     else if (sort === "name")
-      packs.sort((a, b) => a.name.localeCompare(b.name));
-    return packs;
+      items.sort((a, b) => a.name.localeCompare(b.name));
+    return items;
+  }
+
+  function createStarWidget(value) {
+    const clamped = Math.max(0, Math.min(5, Number(value) || 0));
+    const star = document.createElement("span");
+    star.className = "star-wrap";
+    const base = document.createElement("span");
+    base.className = "star-base";
+    base.textContent = "★";
+    const fill = document.createElement("span");
+    fill.className = "star-fill";
+    fill.textContent = "★";
+    fill.style.width = `${Math.max(0, Math.min(100, clamped * 100))}%`;
+    star.append(base, fill);
+    return star;
+  }
+
+  function renderRatingWidget(wrap, type, item, userVoted) {
+    const avg = Number(item?.liveRating?.avg);
+    const hasAverage = Number.isFinite(avg);
+    const votes = item?.liveRating?.votes || 0;
+    wrap.innerHTML = "";
+
+    const starsEl = document.createElement("div");
+    starsEl.className = "mkt-stars" + (userVoted ? " voted" : "");
+    starsEl.title = userVoted
+      ? "You can change your rating in 3 minutes"
+      : "Click to rate";
+
+    const displayValue = hasAverage ? avg : 0;
+    for (let s = 1; s <= 5; s++) {
+      const partial = Math.max(0, Math.min(1, displayValue - (s - 1)));
+      const starWrap = createStarWidget(partial);
+      if (!userVoted) {
+        const left = document.createElement("span");
+        left.className = "hit-half left";
+        const right = document.createElement("span");
+        right.className = "hit-half right";
+        left.addEventListener("click", () => handleRatingVote(type, item, s - 0.5, wrap));
+        right.addEventListener("click", () => handleRatingVote(type, item, s, wrap));
+        starWrap.append(left, right);
+      }
+      starsEl.appendChild(starWrap);
+    }
+    const val = document.createElement("span");
+    val.className = "rating-val";
+    val.textContent = hasAverage ? `${avg.toFixed(1)} (${votes})` : "Unrated";
+    starsEl.appendChild(val);
+    wrap.appendChild(starsEl);
+  }
+
+  async function handleRatingVote(type, item, value, wrap) {
+    chrome.storage.local.get(["mktRatings"], async (items) => {
+      const mktRatings = items.mktRatings || {};
+      const key = mktRatingStorageKey(type, item.id);
+      const prev = mktRatings[key];
+      const now = Date.now();
+      const COOLDOWN = 3 * 60 * 1000;
+      if (prev && now - prev.timestamp < COOLDOWN) return;
+      mktRatings[key] = { value, timestamp: now };
+      chrome.storage.local.set({ mktRatings });
+      const cur = await fetchLiveRating(mktRatingCounterKey(type, item.id));
+      const oldStars = prev ? Number(prev.value) || 0 : 0;
+      const isFirstVote = !prev;
+      const newStars = Math.max(0, (cur.stars || 0) - oldStars + value);
+      const newRating = await submitRating(
+        mktRatingCounterKey(type, item.id),
+        newStars,
+        isFirstVote,
+      );
+      const list = type === "themes" ? mktAllThemes : mktAllPacks;
+      const entry = list.find((p) => p.id === item.id);
+      if (entry) entry.liveRating = newRating;
+      renderRatingWidget(wrap, type, entry || item, true);
+      setTimeout(() => {
+        renderRatingWidget(wrap, type, entry || item, false);
+      }, COOLDOWN);
+    });
+  }
+
+  function attachRatingWidget(wrap, type, item) {
+    chrome.storage.local.get(["mktRatings"], (items) => {
+      const mktRatings = items.mktRatings || {};
+      const key = mktRatingStorageKey(type, item.id);
+      const prev = mktRatings[key];
+      const COOLDOWN = 3 * 60 * 1000;
+      const locked = prev && Date.now() - prev.timestamp < COOLDOWN;
+      renderRatingWidget(wrap, type, item, locked);
+      if (locked) {
+        const remaining = COOLDOWN - (Date.now() - prev.timestamp);
+        setTimeout(() => {
+          const list = type === "themes" ? mktAllThemes : mktAllPacks;
+          const latest = list.find((p) => p.id === item.id) || item;
+          renderRatingWidget(wrap, type, latest, false);
+        }, remaining);
+      }
+    });
   }
 
   function renderMarketplaceGrid() {
-    const packs = getFilteredSortedPacks();
-    if (!packs.length) {
+    const items = getFilteredSortedMarketplaceItems();
+    if (!items.length) {
       mktGrid.innerHTML =
-        '<div class="mkt-empty">No packs match your search.</div>';
+        `<div class="mkt-empty">No ${mktMode} match your search.</div>`;
       return;
     }
     mktGrid.innerHTML = "";
-    packs.forEach((pack) => mktGrid.appendChild(buildMktCard(pack)));
+    items.forEach((item) =>
+      mktGrid.appendChild(
+        mktMode === "themes" ? buildMktThemeCard(item) : buildMktCard(item),
+      ),
+    );
   }
 
   function buildMktCard(pack) {
@@ -3457,105 +3871,71 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.addEventListener("click", () => installMktPack(pack, btn, false));
     }
 
-    // Interactive star rating
-    function renderRatingWidget(wrap, liveRating, userVoted) {
-      const avg = liveRating?.avg;
-      const votes = liveRating?.votes || 0;
-      const filled = avg !== null ? Math.round(avg) : 0;
-      wrap.innerHTML = "";
-
-      const starsEl = document.createElement("div");
-      starsEl.className = "mkt-stars" + (userVoted ? " voted" : "");
-      starsEl.title = userVoted
-        ? "You can change your rating in 3 minutes"
-        : "Click to rate";
-
-      for (let s = 1; s <= 5; s++) {
-        const sp = document.createElement("span");
-        sp.className = s <= filled ? "star" : "star-empty";
-        sp.textContent = "★";
-        sp.dataset.val = s;
-        if (!userVoted) {
-          sp.addEventListener("mouseenter", () => {
-            starsEl.querySelectorAll("span").forEach((el, idx) => {
-              el.className = idx < s ? "star hover" : "star-empty";
-            });
-          });
-          sp.addEventListener("mouseleave", () => {
-            starsEl.querySelectorAll("span").forEach((el, idx) => {
-              el.className = idx < filled ? "star" : "star-empty";
-            });
-          });
-          sp.addEventListener("click", async () => {
-            chrome.storage.local.get(["mktRatings"], async (items) => {
-              const mktRatings = items.mktRatings || {};
-              const prev = mktRatings[pack.id];
-              const now = Date.now();
-              const COOLDOWN = 3 * 60 * 1000; // 3 minutes
-
-              // Still within cooldown — ignore click
-              if (prev && now - prev.timestamp < COOLDOWN) return;
-
-              // Save new vote with timestamp
-              mktRatings[pack.id] = { value: s, timestamp: now };
-              chrome.storage.local.set({ mktRatings });
-              starsEl.classList.add("voted");
-
-              // Adjust totals: subtract old vote, add new one
-              const cur = await fetchLiveRating(pack.id);
-              const oldStars = prev ? prev.value : 0;
-              const isFirstVote = !prev;
-              const newStars = Math.max(0, (cur.stars || 0) - oldStars + s);
-              const newRating = await submitRating(
-                pack.id,
-                newStars,
-                isFirstVote,
-              );
-              const entry = mktAllPacks.find((p) => p.id === pack.id);
-              if (entry) entry.liveRating = newRating;
-              renderRatingWidget(wrap, newRating, true);
-
-              // Unlock widget after cooldown
-              setTimeout(() => {
-                renderRatingWidget(wrap, entry?.liveRating ?? newRating, false);
-              }, COOLDOWN);
-            });
-          });
-        }
-        starsEl.appendChild(sp);
-      }
-
-      const val = document.createElement("span");
-      val.className = "rating-val";
-      val.textContent =
-        avg !== null ? `${avg.toFixed(1)} (${votes})` : "Unrated";
-      starsEl.appendChild(val);
-      wrap.appendChild(starsEl);
-    }
-
-    // Check if user voted and whether cooldown has expired
-    chrome.storage.local.get(["mktRatings"], (items) => {
-      const mktRatings = items.mktRatings || {};
-      const prev = mktRatings[pack.id];
-      const COOLDOWN = 3 * 60 * 1000;
-      const locked = prev && Date.now() - prev.timestamp < COOLDOWN;
-      renderRatingWidget(ratingWrap, pack.liveRating, locked);
-      // If still in cooldown, schedule unlock
-      if (locked) {
-        const remaining = COOLDOWN - (Date.now() - prev.timestamp);
-        setTimeout(() => {
-          const entry = mktAllPacks.find((p) => p.id === pack.id);
-          renderRatingWidget(
-            ratingWrap,
-            entry?.liveRating ?? pack.liveRating,
-            false,
-          );
-        }, remaining);
-      }
-    });
+    attachRatingWidget(ratingWrap, "packs", pack);
 
     footer.appendChild(btn);
 
+    card.append(thumb, info, footer);
+    return card;
+  }
+
+  function buildMktThemeCard(theme) {
+    const installedAt = mktInstalledThemesMap.get(theme.id) ?? null;
+    const installed = installedAt !== null;
+    const card = document.createElement("div");
+    card.className = "mkt-card";
+    card.dataset.themeId = theme.id;
+
+    const thumb = document.createElement("div");
+    thumb.className = "mkt-thumb";
+    thumb.innerHTML = `<span class="mkt-thumb-placeholder">🎨</span>`;
+
+    const info = document.createElement("div");
+    info.className = "mkt-info";
+    const tagsHtml = (theme.tags || [])
+      .map((t) => `<span class="mkt-tag">${t}</span>`)
+      .join("");
+    const v = theme.vars || {};
+    info.innerHTML = `
+            <div class="mkt-name">${theme.name}</div>
+            ${
+              theme.author === "Yossof0"
+                ? '<div class="mkt-owner">👑 Yossof0</div>'
+                : `<div class="mkt-author">by ${theme.author || "Unknown"}</div>`
+            }
+            ${theme.description ? `<div class="mkt-desc">${theme.description}</div>` : ""}
+            <div class="mkt-palette">
+              <span class="mkt-palette-chip" style="background:${v.bg || "#1a1a2e"}"></span>
+              <span class="mkt-palette-chip" style="background:${v.panel || "#1e1e30"}"></span>
+              <span class="mkt-palette-chip" style="background:${v.card || "#222235"}"></span>
+              <span class="mkt-palette-chip" style="background:${v.accent || "#6c63ff"}"></span>
+              <span class="mkt-palette-chip" style="background:${v.text || "#e0e0e0"}"></span>
+            </div>
+            <div class="mkt-tags" style="margin-top:auto;padding-top:0.3rem;">${tagsHtml}</div>`;
+
+    const ratingWrap = document.createElement("div");
+    ratingWrap.className = "mkt-rating-wrap";
+    ratingWrap.dataset.themeId = theme.id;
+    info.appendChild(ratingWrap);
+
+    const footer = document.createElement("div");
+    footer.className = "mkt-footer";
+    footer.innerHTML = `<span class="mkt-downloads">⬇ ${(theme.downloads || 0).toLocaleString()}</span>`;
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    if (installed) {
+      btn.className = "mkt-install-btn installed";
+      btn.textContent = "✓ Installed";
+      btn.disabled = true;
+    } else {
+      btn.className = "mkt-install-btn";
+      btn.textContent = "Install";
+      btn.addEventListener("click", () => installMktTheme(theme, btn));
+    }
+
+    attachRatingWidget(ratingWrap, "themes", theme);
+    footer.appendChild(btn);
     card.append(thumb, info, footer);
     return card;
   }
@@ -3645,6 +4025,64 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  async function installMktTheme(theme, btn) {
+    btn.textContent = "Installing…";
+    btn.classList.add("loading");
+    btn.disabled = true;
+    try {
+      const installedAt = theme.remotePath || `${Date.now()}`;
+      chrome.storage.local.get(["customThemes"], (items) => {
+        const existing = items.customThemes || {};
+        const id = `market-${theme.id}`;
+        const newTheme = {
+          id,
+          name: theme.name,
+          mode: theme.mode || "dark",
+          vars: theme.vars,
+          fromMarketplace: true,
+          source: "installed",
+          readonly: true,
+          installedAt,
+        };
+        const updatedThemes = { ...existing, [id]: newTheme };
+        chrome.storage.local.set({ customThemes: updatedThemes, uiTheme: id }, () => {
+          mktInstalledThemesMap.set(theme.id, installedAt);
+          btn.textContent = "✓ Installed";
+          btn.classList.remove("loading");
+          btn.classList.add("installed");
+          btn.disabled = true;
+          applyTheme(id);
+          uiTheme.value = id;
+          loadCustomThemes(updatedThemes);
+          updateDeleteThemeBtn();
+          showToast(`"${theme.name}" installed!`);
+          countHit(mktCounterKey("themes", theme.id))
+            .then(() => countGet(mktCounterKey("themes", theme.id)))
+            .then((newCount) => {
+              const entry = mktAllThemes.find((t) => t.id === theme.id);
+              if (entry && newCount !== null) {
+                entry.downloads = newCount;
+                const card = mktGrid.querySelector(`[data-theme-id="${theme.id}"]`);
+                if (card) {
+                  const dl = card.querySelector(".mkt-downloads");
+                  if (dl) dl.textContent = `⬇ ${newCount.toLocaleString()}`;
+                }
+              }
+            });
+        });
+      });
+    } catch (e) {
+      btn.textContent = "✗ Failed";
+      btn.style.background = "var(--danger, #e55)";
+      btn.classList.remove("loading");
+      setTimeout(() => {
+        btn.textContent = "Install";
+        btn.style.background = "";
+        btn.disabled = false;
+      }, 2500);
+    }
+  }
+
   function initMarketplace() {
     if (!mktInitialized) {
       mktInitialized = true;
@@ -3656,6 +4094,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
   mktSearch.addEventListener("input", renderMarketplaceGrid);
   mktSort.addEventListener("change", renderMarketplaceGrid);
+  mktModePacksBtn?.addEventListener("click", () => {
+    mktMode = "packs";
+    mktActiveTag = "all";
+    mktModePacksBtn.classList.add("active");
+    mktModeThemesBtn?.classList.remove("active");
+    mktSearch.placeholder = "Search packs…";
+    buildTagFilters();
+    renderMarketplaceGrid();
+  });
+  mktModeThemesBtn?.addEventListener("click", () => {
+    mktMode = "themes";
+    mktActiveTag = "all";
+    mktModeThemesBtn.classList.add("active");
+    mktModePacksBtn?.classList.remove("active");
+    mktSearch.placeholder = "Search themes…";
+    buildTagFilters();
+    renderMarketplaceGrid();
+  });
   mktRefreshBtn.addEventListener("click", () => {
     mktInitialized = false;
     refreshInstalledIds(() => fetchRegistry(true));
@@ -4153,14 +4609,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Theme import from parsed object (shared by file input + drop)
   function importThemeFromObject(parsed) {
-    if (!parsed.name || !parsed.colors) {
+    const vars = parsed.vars || parsed.colors;
+    if (!parsed.name || !vars) {
       showToast("Invalid theme file", "error");
       return;
     }
     chrome.storage.local.get(["customThemes"], (items) => {
+      const id = `custom-${Date.now()}`;
       const themes = {
         ...(items.customThemes || {}),
-        [parsed.name]: parsed.colors,
+        [id]: {
+          id,
+          name: parsed.name,
+          mode: parsed.mode === "light" ? "light" : "dark",
+          source: "imported",
+          readonly: false,
+          vars: {
+            bg: vars.bg || vars.background || "#1a1a2e",
+            text: vars.text || "#e0e0e0",
+            card: vars.card || "#222235",
+            panel: vars.panel || "#1e1e30",
+            accent: vars.accent || "#6c63ff",
+            proper: vars.proper || "#ffffff",
+          },
+        },
       };
       chrome.storage.local.set({ customThemes: themes }, () => {
         showToast(`Theme "${parsed.name}" imported ✓`);
